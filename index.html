@@ -113,7 +113,16 @@
         }
         .draggable-card.dragging {
             opacity: 0.5;
-            border: 2px dashed #6366f1;
+            /* 拖拽时隐藏原卡片的边框，只留虚线 */
+        }
+        .draggable-card.dragging > div {
+             opacity: 0.5;
+             border: 2px dashed #6366f1;
+             background: transparent;
+             box-shadow: none;
+        }
+        .draggable-card.dragging > div > div {
+            opacity: 0; 
         }
         
         /* 输入框自动填充背景修复 */
@@ -204,132 +213,151 @@
         };
 
         // --- 独立出来的卡片组件 ---
+        
+        // 1. Reward Card (Amber Gradient)
         const RewardCard = ({ stats, coinPrice, currentComp, t }) => (
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border border-amber-200 dark:border-amber-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-amber-900/30 hover:border-amber-300 dark:hover:border-amber-500/60 transition-all duration-300 group h-full">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-100/50 dark:from-amber-900/20 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
-                    <Icon name="gift" size={120} className="text-amber-600 dark:text-amber-500" />
-                </div>
-                <div className="relative z-10 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="relative">
-                             <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-amber-500"></div>
-                             <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"><Icon name="coins" size={18} /></div>
+            <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-amber-300 via-orange-400 to-yellow-400 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-amber-900/30 transition-all duration-300 group h-full">
+                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-100/50 dark:from-amber-900/20 to-transparent opacity-50"></div>
+                    <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
+                        <Icon name="gift" size={120} className="text-amber-600 dark:text-amber-500" />
+                    </div>
+                    <div className="relative z-10 flex-1 flex flex-col">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="relative">
+                                 <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-amber-500"></div>
+                                 <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"><Icon name="coins" size={18} /></div>
+                            </div>
+                            <div className="text-amber-900/70 dark:text-amber-200/70 text-xs font-bold uppercase tracking-widest">{t.rewardEst}</div>
                         </div>
-                        <div className="text-amber-900/70 dark:text-amber-200/70 text-xs font-bold uppercase tracking-widest">{t.rewardEst}</div>
-                    </div>
-                    <div className="flex items-baseline gap-0.5 text-amber-950 dark:text-white mb-3">
-                        <span className="text-xl font-bold text-amber-600/70 dark:text-amber-400/70">$</span>
-                        <span className="text-4xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
-                            {stats.latestReward ? (stats.latestReward * coinPrice).toLocaleString(undefined, {maximumFractionDigits: 2}) : '0.00'}
-                        </span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-auto">
-                        <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
-                            <span>
-                                {stats.latestReward ? stats.latestReward.toLocaleString() : '-'} 
-                                <span className="opacity-60 ml-0.5">{currentComp.symbol}</span>
+                        <div className="flex items-baseline gap-0.5 text-amber-950 dark:text-white mb-3">
+                            <span className="text-xl font-bold text-amber-600/70 dark:text-amber-400/70">$</span>
+                            <span className="text-4xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
+                                {stats.latestReward ? (stats.latestReward * coinPrice).toLocaleString(undefined, {maximumFractionDigits: 2}) : '0.00'}
                             </span>
                         </div>
+                        
+                        <div className="flex items-center justify-between mt-auto">
+                            <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
+                                <span>
+                                    {stats.latestReward ? stats.latestReward.toLocaleString() : '-'} 
+                                    <span className="opacity-60 ml-0.5">{currentComp.symbol}</span>
+                                </span>
+                            </div>
 
-                        <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
-                            <span>
-                                <span className="opacity-60 mr-0.5">TOP</span> 
-                                {stats.latestEligibility ? stats.latestEligibility : '-'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-
-        const PredictionCard = ({ stats, t }) => (
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border border-violet-200 dark:border-violet-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 hover:border-violet-300 dark:hover:border-violet-500/60 transition-all duration-300 group h-full">
-                <div className="absolute inset-0 bg-gradient-to-br from-violet-100/50 dark:from-violet-900/20 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12">
-                    <Icon name="sparkles" size={120} className="text-violet-600 dark:text-violet-500" />
-                </div>
-                <div className="relative z-10 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="relative">
-                            <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-violet-500"></div>
-                            <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"><Icon name="bot" size={18} /></div>
-                        </div>
-                        <div className="text-violet-900/70 dark:text-violet-200/70 text-xs font-bold uppercase tracking-widest">{t.predictedNext}</div>
-                    </div>
-                    <div className="flex items-baseline gap-0.5 text-violet-950 dark:text-white">
-                        <span className="text-xl font-bold text-violet-600/70 dark:text-violet-400/70">$</span>
-                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">{stats.predictedNext.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
-                    </div>
-                    <div className="mt-2 text-xs font-medium text-violet-700/80 dark:text-violet-400/80">
-                        {t.linearTrend}
-                    </div>
-                </div>
-            </div>
-        );
-
-        const ThresholdCard = ({ stats, t }) => (
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border border-blue-200 dark:border-blue-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500/60 transition-all duration-300 group h-full">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 dark:from-blue-900/20 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
-                    <Icon name="target" size={120} className="text-blue-600 dark:text-blue-500" />
-                </div>
-                <div className="relative z-10 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="relative">
-                            <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-blue-500"></div>
-                            <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"><Icon name="crosshair" size={18} /></div>
-                        </div>
-                        <div className="text-blue-900/70 dark:text-blue-200/70 text-xs font-bold uppercase tracking-widest">{t.currentThreshold}</div>
-                    </div>
-                    <div className="flex items-baseline gap-0.5 text-blue-950 dark:text-white">
-                        <span className="text-xl font-bold text-blue-600/70 dark:text-blue-400/70">$</span>
-                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">{stats.current.toLocaleString()}</span>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                        <div className="text-xs font-medium text-blue-700/80 dark:text-blue-400/80 flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse"></div> {t.liveUpdate}
-                        </div>
-                        <div className="text-[10px] font-bold text-blue-600/70 dark:text-blue-300/70 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-500/20">
-                            <Icon name="user" size={10} />
-                            ${stats.latestUserVolume.toLocaleString()}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-
-        const GrowthCard = ({ stats, t }) => (
-            <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full ${stats.growthRate >= 0 ? 'border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-900/30' : 'border-rose-200 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 dark:hover:shadow-rose-900/30'}`}>
-                <div className={`absolute inset-0 bg-gradient-to-br ${stats.growthRate >= 0 ? 'from-emerald-100/50 dark:from-emerald-900/20' : 'from-rose-100/50 dark:from-rose-900/20'} to-transparent opacity-50`}></div>
-                <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${stats.growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
-                    <Icon name={stats.growthRate >= 0 ? "trending-up" : "trending-down"} size={120} />
-                </div>
-                <div className="relative z-10 h-full flex flex-col">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="relative">
-                            <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${stats.growthRate >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
-                            <div className={`relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center ${stats.growthRate >= 0 ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'}`}>
-                                <Icon name="percent" size={18} />
+                            <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
+                                <span>
+                                    <span className="opacity-60 mr-0.5">TOP</span> 
+                                    {stats.latestEligibility ? stats.latestEligibility : '-'}
+                                </span>
                             </div>
                         </div>
-                        <div className={`${stats.growthRate >= 0 ? 'text-emerald-900/70 dark:text-emerald-200/70' : 'text-rose-900/70 dark:text-rose-200/70'} text-xs font-bold uppercase tracking-widest`}>{t.growthRate}</div>
-                    </div>
-                    <div className={`flex items-baseline gap-1 ${stats.growthRate >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
-                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
-                            {stats.growthRate >= 0 ? '+' : ''}{stats.growthRate.toFixed(1)}
-                        </span>
-                        <span className="text-xl font-bold opacity-80">%</span>
-                    </div>
-                    <div className={`mt-2 text-xs font-medium ${stats.growthRate >= 0 ? 'text-emerald-700/80 dark:text-emerald-400/80' : 'text-rose-700/80 dark:text-rose-400/80'}`}>
-                        {t.vsYesterday}
                     </div>
                 </div>
             </div>
         );
 
-        // 倒计时组件
+        // 2. Prediction Card (Violet Gradient)
+        const PredictionCard = ({ stats, t }) => (
+            <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-violet-300 via-purple-400 to-fuchsia-400 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 transition-all duration-300 group h-full">
+                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                    <div className="absolute inset-0 bg-gradient-to-br from-violet-100/50 dark:from-violet-900/20 to-transparent opacity-50"></div>
+                    <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12">
+                        <Icon name="sparkles" size={120} className="text-violet-600 dark:text-violet-500" />
+                    </div>
+                    <div className="relative z-10 flex-1 flex flex-col">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="relative">
+                                <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-violet-500"></div>
+                                <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"><Icon name="bot" size={18} /></div>
+                            </div>
+                            <div className="text-violet-900/70 dark:text-violet-200/70 text-xs font-bold uppercase tracking-widest">{t.predictedNext}</div>
+                        </div>
+                        <div className="flex items-baseline gap-0.5 text-violet-950 dark:text-white">
+                            <span className="text-xl font-bold text-violet-600/70 dark:text-violet-400/70">$</span>
+                            <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">{stats.predictedNext.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                        </div>
+                        <div className="mt-2 text-xs font-medium text-violet-700/80 dark:text-violet-400/80">
+                            {t.linearTrend}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // 3. Threshold Card (Blue Gradient)
+        const ThresholdCard = ({ stats, t }) => (
+            <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-blue-300 via-cyan-400 to-indigo-400 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 transition-all duration-300 group h-full">
+                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 dark:from-blue-900/20 to-transparent opacity-50"></div>
+                    <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
+                        <Icon name="target" size={120} className="text-blue-600 dark:text-blue-500" />
+                    </div>
+                    <div className="relative z-10 flex-1 flex flex-col">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="relative">
+                                <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-blue-500"></div>
+                                <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"><Icon name="crosshair" size={18} /></div>
+                            </div>
+                            <div className="text-blue-900/70 dark:text-blue-200/70 text-xs font-bold uppercase tracking-widest">{t.currentThreshold}</div>
+                        </div>
+                        <div className="flex items-baseline gap-0.5 text-blue-950 dark:text-white">
+                            <span className="text-xl font-bold text-blue-600/70 dark:text-blue-400/70">$</span>
+                            <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">{stats.current.toLocaleString()}</span>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                            <div className="text-xs font-medium text-blue-700/80 dark:text-blue-400/80 flex items-center gap-1">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse"></div> {t.liveUpdate}
+                            </div>
+                            <div className="text-[10px] font-bold text-blue-600/70 dark:text-blue-300/70 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-500/20">
+                                <Icon name="user" size={10} />
+                                ${stats.latestUserVolume.toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // 4. Growth Card (Dynamic Gradient)
+        const GrowthCard = ({ stats, t }) => {
+            const gradientClass = stats.growthRate >= 0 
+                ? 'from-emerald-300 via-green-400 to-teal-400' 
+                : 'from-rose-300 via-red-400 to-orange-400';
+                
+            return (
+                <div className={`relative rounded-3xl p-[1px] bg-gradient-to-br ${gradientClass} shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full`}>
+                    <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${stats.growthRate >= 0 ? 'from-emerald-100/50 dark:from-emerald-900/20' : 'from-rose-100/50 dark:from-rose-900/20'} to-transparent opacity-50`}></div>
+                        <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${stats.growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
+                            <Icon name={stats.growthRate >= 0 ? "trending-up" : "trending-down"} size={120} />
+                        </div>
+                        <div className="relative z-10 flex-1 flex flex-col">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="relative">
+                                    <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${stats.growthRate >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                                    <div className={`relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center ${stats.growthRate >= 0 ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'}`}>
+                                        <Icon name="percent" size={18} />
+                                    </div>
+                                </div>
+                                <div className={`${stats.growthRate >= 0 ? 'text-emerald-900/70 dark:text-emerald-200/70' : 'text-rose-900/70 dark:text-rose-200/70'} text-xs font-bold uppercase tracking-widest`}>{t.growthRate}</div>
+                            </div>
+                            <div className={`flex items-baseline gap-1 ${stats.growthRate >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                                <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
+                                    {stats.growthRate >= 0 ? '+' : ''}{stats.growthRate.toFixed(1)}
+                                </span>
+                                <span className="text-xl font-bold opacity-80">%</span>
+                            </div>
+                            <div className={`mt-2 text-xs font-medium ${stats.growthRate >= 0 ? 'text-emerald-700/80 dark:text-emerald-400/80' : 'text-rose-700/80 dark:text-rose-400/80'}`}>
+                                {t.vsYesterday}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 5. Countdown Card (Dynamic Gradient)
         const CountdownCard = ({ startDate, endDate, symbol, t }) => {
             const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'noData', progress: 0 });
 
@@ -391,76 +419,78 @@
                 noData: 'bg-slate-400'
             };
 
-            const borderColors = {
-                startsIn: 'border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-300 dark:hover:border-indigo-500/60',
-                endsIn: 'border-cyan-200 dark:border-cyan-500/30 hover:border-cyan-300 dark:hover:border-cyan-500/60',
-                ended: 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600',
-                noData: 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+            const borderGradients = {
+                startsIn: 'from-indigo-300 via-purple-400 to-indigo-400',
+                endsIn: 'from-cyan-300 via-blue-400 to-indigo-400',
+                ended: 'from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700',
+                noData: 'from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700'
             };
 
             const totalPixels = 40; 
             const activePixels = Math.floor((timeLeft.progress / 100) * totalPixels);
 
             return (
-                <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full ${borderColors[timeLeft.status]}`}>
-                    <div className={`absolute inset-0 bg-gradient-to-br ${timeLeft.status === 'endsIn' ? 'from-cyan-50/50 dark:from-cyan-900/10' : 'from-indigo-50/50 dark:from-indigo-900/10'} to-transparent opacity-50`}></div>
-                    <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${statusColors[timeLeft.status]}`}>
-                        <Icon name="timer" size={120} />
-                    </div>
-                    
-                    <div className="relative z-10 h-full flex flex-col">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="relative">
-                                <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${pulseColors[timeLeft.status]}`}></div>
-                                <div className={`relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-white/50 dark:bg-white/5 ${statusColors[timeLeft.status]} border-white/20`}>
-                                    <Icon name={timeLeft.status === 'ended' ? "flag" : "clock"} size={18} />
-                                </div>
-                            </div>
-                            <div className="flex flex-col">
-                                <div className={`text-xs font-bold uppercase tracking-widest opacity-70 ${statusColors[timeLeft.status]}`}>{t.cardCountdown}</div>
-                                <div className="text-[10px] font-bold opacity-50">{symbol}</div>
-                            </div>
+                <div className={`relative rounded-3xl p-[1px] bg-gradient-to-br ${borderGradients[timeLeft.status]} shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full`}>
+                    <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                        <div className={`absolute inset-0 bg-gradient-to-br ${timeLeft.status === 'endsIn' ? 'from-cyan-50/50 dark:from-cyan-900/10' : 'from-indigo-50/50 dark:from-indigo-900/10'} to-transparent opacity-50`}></div>
+                        <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${statusColors[timeLeft.status]}`}>
+                            <Icon name="timer" size={120} />
                         </div>
                         
-                        {timeLeft.status === 'ended' ? (
-                            <div className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-500 dark:text-slate-400 mb-3">
-                                {t.ended}
-                            </div>
-                        ) : (
-                            <div className={`flex items-baseline gap-1 mb-3 ${statusColors[timeLeft.status]}`}>
-                                <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.days}</span>
-                                <span className="text-xs font-bold uppercase mr-1">d</span>
-                                <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.hours}</span>
-                                <span className="text-xs font-bold uppercase mr-1">h</span>
-                                <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg opacity-80 text-slate-900 dark:text-white">{timeLeft.minutes}</span>
-                                <span className="text-xs font-bold uppercase mr-1 opacity-80">m</span>
-                            </div>
-                        )}
-
-                        <div className="mt-auto">
-                            {timeLeft.status !== 'ended' && timeLeft.status !== 'noData' && (
+                        <div className="relative z-10 flex-1 flex flex-col">
+                            <div className="flex items-center gap-3 mb-3">
                                 <div className="relative">
-                                    <div className="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
-                                        <span>{t[timeLeft.status]}</span>
-                                        <span className="tabular-nums">{timeLeft.seconds}s</span>
-                                    </div>
-                                    
-                                    <div className="flex justify-between gap-[2px] h-3 w-full">
-                                        {[...Array(totalPixels)].map((_, i) => {
-                                            const isActive = i < activePixels;
-                                            const hue = (i / totalPixels) * 360;
-                                            const colorStyle = isActive ? { backgroundColor: `hsl(${hue}, 100%, 60%)`, boxShadow: `0 0 4px hsl(${hue}, 100%, 60%)` } : {};
-                                            return <div key={i} className={`h-full flex-1 rounded-sm transition-all duration-300 ${isActive ? 'scale-y-110 opacity-100' : 'bg-slate-200 dark:bg-slate-800/60 opacity-30 scale-y-75'}`} style={colorStyle}></div>;
-                                        })}
+                                    <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${pulseColors[timeLeft.status]}`}></div>
+                                    <div className={`relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-white/50 dark:bg-white/5 ${statusColors[timeLeft.status]} border-white/20`}>
+                                        <Icon name={timeLeft.status === 'ended' ? "flag" : "clock"} size={18} />
                                     </div>
                                 </div>
-                            )}
+                                <div className="flex flex-col">
+                                    <div className={`text-xs font-bold uppercase tracking-widest opacity-70 ${statusColors[timeLeft.status]}`}>{t.cardCountdown}</div>
+                                    <div className="text-[10px] font-bold opacity-50">{symbol}</div>
+                                </div>
+                            </div>
                             
-                            {timeLeft.status === 'ended' && startDate && endDate && (
-                                 <div className="text-[10px] font-mono text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
-                                    {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
-                                 </div>
+                            {timeLeft.status === 'ended' ? (
+                                <div className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-500 dark:text-slate-400 mb-3">
+                                    {t.ended}
+                                </div>
+                            ) : (
+                                <div className={`flex items-baseline gap-1 mb-3 ${statusColors[timeLeft.status]}`}>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.days}</span>
+                                    <span className="text-xs font-bold uppercase mr-1">d</span>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.hours}</span>
+                                    <span className="text-xs font-bold uppercase mr-1">h</span>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg opacity-80 text-slate-900 dark:text-white">{timeLeft.minutes}</span>
+                                    <span className="text-xs font-bold uppercase mr-1 opacity-80">m</span>
+                                </div>
                             )}
+
+                            <div className="mt-auto">
+                                {timeLeft.status !== 'ended' && timeLeft.status !== 'noData' && (
+                                    <div className="relative">
+                                        <div className="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+                                            <span>{t[timeLeft.status]}</span>
+                                            <span className="tabular-nums">{timeLeft.seconds}s</span>
+                                        </div>
+                                        
+                                        <div className="flex justify-between gap-[2px] h-3 w-full">
+                                            {[...Array(totalPixels)].map((_, i) => {
+                                                const isActive = i < activePixels;
+                                                const hue = (i / totalPixels) * 360;
+                                                const colorStyle = isActive ? { backgroundColor: `hsl(${hue}, 100%, 60%)`, boxShadow: `0 0 4px hsl(${hue}, 100%, 60%)` } : {};
+                                                return <div key={i} className={`h-full flex-1 rounded-sm transition-all duration-300 ${isActive ? 'scale-y-110 opacity-100' : 'bg-slate-200 dark:bg-slate-800/60 opacity-30 scale-y-75'}`} style={colorStyle}></div>;
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {timeLeft.status === 'ended' && startDate && endDate && (
+                                     <div className="text-[10px] font-mono text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                                        {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
+                                     </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1247,10 +1277,25 @@
                 setError(null);
                 try {
                     const dataStr = chartData.map(d => `${d.displayDay}: Threshold $${d.volume}, My Volume $${d.userVolume}`).join(', ');
-                    const prompt = `${t.promptStrategy} ${dataStr}。
-                        Coin: ${currentComp.name} (${currentComp.symbol}).
-                        Analyze current market phase and my safety margin (User Volume vs Threshold).
-                        Give specific strategy advice (short and concise, under 100 words).
+                    
+                    // 升级版 Prompt：请求更结构化和详细的建议
+                    const prompt = `
+                        你是一位拥有10年经验的加密货币交易比赛冲榜教练。请根据以下数据分析当前比赛形势，并为参赛者提供全面的冲榜建议。请用中文回答。
+
+                        [比赛数据]
+                        币种: ${currentComp.name} (${currentComp.symbol})
+                        历史门槛数据序列: ${dataStr}
+                        我的当前交易量: $${stats.latestUserVolume}
+                        当前上榜门槛: $${stats.current}
+                        预测下期门槛: $${stats.predictedNext}
+
+                        [分析要求]
+                        请返回一个严格的 JSON 对象（不要Markdown格式），包含以下字段：
+                        1. "marketPhase" (string): 定义当前竞争阶段（如：早期试探、中期拉锯、周末冲刺、尾盘博弈等）。
+                        2. "riskLevel" (string): 评估被挤出榜单的风险（低/中/高/极高）。
+                        3. "analysis" (string): 深度形势研判（100字以内）。分析门槛增长速率（是加速还是减缓？），评估该用户的安全垫（Gap）是否足够，是否存在被"偷塔"的风险。
+                        4. "actionableAdvice" (array of strings): 3条具体的战术建议。例如："建议立即增加$5000交易量以建立20%的安全缓冲"、"观察UTC 0点前的波动"、"当前排名安全，可暂停操作节省手续费"等。
+                        5. "psychologicalTip" (string): 一句简短的交易心态建议（金句）。
                     `;
 
                     const result = await callGeminiAPI({
@@ -1260,11 +1305,16 @@
                             responseSchema: {
                                 type: "object",
                                 properties: {
-                                    riskLevel: { type: "string" },
                                     marketPhase: { type: "string" },
-                                    strategy: { type: "string" }
+                                    riskLevel: { type: "string" },
+                                    analysis: { type: "string" },
+                                    actionableAdvice: { 
+                                        type: "array",
+                                        items: { type: "string" }
+                                    },
+                                    psychologicalTip: { type: "string" }
                                 },
-                                required: ["riskLevel", "marketPhase", "strategy"]
+                                required: ["marketPhase", "riskLevel", "analysis", "actionableAdvice", "psychologicalTip"]
                             }
                         }
                     });
@@ -1488,7 +1538,7 @@
                                     </label>
                                 </div>
                                 
-                                {/* History Snapshot List */}
+                                {/* History Snapshot List (Upgraded to match Core Cards) */}
                                 <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.01] flex flex-col max-h-[500px]">
                                     {/* ... history list content ... */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
@@ -1583,11 +1633,138 @@
                             
                             {/* ... Graph and Strategy Section ... */}
                             <div className="lg:col-span-2 space-y-6">
-                                <div className="glass-panel p-6 rounded-3xl shadow-lg dark:shadow-2xl relative overflow-hidden bg-white dark:bg-slate-900/40">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 opacity-50"></div>
+                                
+                                {/* 移动到上方：Gemini 赛项深度洞察卡片 (全新设计版 v3 - 详细建议) */}
+                                {aiStrategy && (
+                                    <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-xl dark:shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)] animate-in slide-in-from-top-4 group">
+                                        {/* Inner Card Background */}
+                                        <div className="relative bg-white dark:bg-[#0f172a] rounded-[23px] h-full overflow-hidden">
+                                            
+                                            {/* Decorative Elements */}
+                                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-100 dark:bg-pink-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
+
+                                            {/* Card Content Container */}
+                                            <div className="relative z-10 p-6 md:p-8">
+                                                
+                                                {/* 1. Header: Title & Pills */}
+                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-white/5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/30 text-white shrink-0">
+                                                            <Icon name="brain-circuit" size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight uppercase flex items-center gap-2">
+                                                                {t.geminiInsight}
+                                                                <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 font-mono font-bold">PRO</span>
+                                                            </h3>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Status Pills */}
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 rounded-full text-[10px] font-bold border border-indigo-100 dark:border-indigo-500/20">
+                                                            {aiStrategy.marketPhase}
+                                                        </span>
+                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1.5 ${
+                                                            aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') 
+                                                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-100 dark:border-rose-500/20' 
+                                                            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/20'
+                                                        }`}>
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></div>
+                                                            {aiStrategy.riskLevel}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                    {/* 2. Analysis Column */}
+                                                    <div className="space-y-4">
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                                                <Icon name="microscope" size={12} /> 形势研判
+                                                            </h4>
+                                                            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
+                                                                {aiStrategy.analysis || aiStrategy.strategy}
+                                                            </p>
+                                                        </div>
+
+                                                        {/* Mindset Tip */}
+                                                        {aiStrategy.psychologicalTip && (
+                                                            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-r from-orange-50/80 to-amber-50/80 dark:from-orange-900/10 dark:to-amber-900/10 border border-orange-100 dark:border-orange-500/10">
+                                                                <Icon name="coffee" size={16} className="text-orange-400 mt-0.5 shrink-0" />
+                                                                <div>
+                                                                    <span className="text-[10px] font-bold text-orange-400 uppercase block mb-0.5">Mindset</span>
+                                                                    <p className="text-xs font-bold text-orange-700 dark:text-orange-200 italic">"{aiStrategy.psychologicalTip}"</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* 3. Actionable Advice Column */}
+                                                    <div>
+                                                        <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1">
+                                                            <Icon name="check-square" size={12} /> 建议行动
+                                                        </h4>
+                                                        <ul className="space-y-2">
+                                                            {aiStrategy.actionableAdvice && Array.isArray(aiStrategy.actionableAdvice) ? (
+                                                                aiStrategy.actionableAdvice.map((advice, idx) => (
+                                                                    <li key={idx} className="flex gap-3 items-start p-3 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-colors group/item">
+                                                                        <div className="mt-0.5 w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold shrink-0 group-hover/item:scale-110 transition-transform">
+                                                                            {idx + 1}
+                                                                        </div>
+                                                                        <span className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-snug">{advice}</span>
+                                                                    </li>
+                                                                ))
+                                                            ) : (
+                                                                // Fallback for older format
+                                                                <li className="flex gap-3 items-start p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                                                                    <span className="text-sm text-slate-700 dark:text-slate-200">{aiStrategy.strategy}</span>
+                                                                </li>
+                                                            )}
+                                                        </ul>
+                                                        
+                                                        {/* Footer Actions */}
+                                                        <div className="flex justify-end mt-4">
+                                                            <button 
+                                                                className="text-[10px] font-bold text-slate-400 hover:text-indigo-500 dark:text-slate-500 dark:hover:text-indigo-400 flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700" 
+                                                                onClick={() => copyText([
+                                                                    `Phase: ${aiStrategy.marketPhase}`,
+                                                                    `Analysis: ${aiStrategy.analysis}`,
+                                                                    `Advice: \n${aiStrategy.actionableAdvice?.map((a,i)=>`${i+1}. ${a}`).join('\n')}`
+                                                                ].join('\n\n'))}
+                                                            >
+                                                                <Icon name="copy" size={12} /> {t.copy || 'COPY REPORT'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 升级版 Growth Curve 卡片 - 与 Core Cards 风格统一 */}
+                                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group">
+                                    
+                                    {/* 背景渐变 */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
+                                    
+                                    {/* 巨大水印图标 */}
+                                    <div className="absolute -right-8 -top-8 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-6 pointer-events-none">
+                                        <Icon name="activity" size={240} className="text-indigo-600 dark:text-indigo-500" />
+                                    </div>
+
                                     <div className="flex justify-between items-center mb-8 relative z-10">
-                                        <h2 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                            <Icon name="activity" className="text-blue-500 dark:text-blue-400" /> {t.growthCurve}
+                                        <h2 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-3">
+                                            {/* 标题图标 - 增加脉冲效果 */}
+                                            <div className="relative">
+                                                <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-indigo-500 opacity-70"></div>
+                                                <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20">
+                                                    <Icon name="activity" size={18} />
+                                                </div>
+                                            </div>
+                                            <span className="text-lg tracking-tight">{t.growthCurve}</span>
                                         </h2>
                                         <button 
                                             onClick={generateAIStrategy} 
@@ -1651,33 +1828,6 @@
                                         </ResponsiveContainer>
                                     </div>
                                 </div>
-
-                                {aiStrategy && (
-                                    <div className="bg-white dark:bg-[#0f172a] border border-indigo-100 dark:border-indigo-500/30 p-8 rounded-3xl shadow-lg dark:shadow-[0_0_30px_-10px_rgba(99,102,241,0.2)] animate-in slide-in-from-bottom-4 relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 dark:bg-indigo-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                                        <div className="flex items-center justify-between mb-6 flex-wrap gap-2 relative z-10">
-                                            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-tighter text-sm">
-                                                <Icon name="brain-circuit" size={20} />
-                                                {t.geminiInsight}
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-full text-[10px] font-bold border border-indigo-100 dark:border-indigo-500/20 shadow-sm dark:shadow-[0_0_10px_-5px_rgba(99,102,241,0.5)]">
-                                                    {t.aiPhase}: {aiStrategy.marketPhase}
-                                                </span>
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm dark:shadow-[0_0_10px_-5px_rgba(0,0,0,0.5)] ${
-                                                    aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 border-rose-100 dark:border-rose-500/20' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/20'
-                                                }`}>
-                                                    {t.aiRisk}: {aiStrategy.riskLevel}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="p-5 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/10 relative z-10">
-                                            <p className="text-sm text-indigo-800 dark:text-indigo-100 leading-relaxed font-medium">
-                                                {aiStrategy.strategy}
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -1685,6 +1835,15 @@
                     {/* Footer Info Cards */}
                     <div className="max-w-6xl mx-auto w-full mt-8 mb-4">
                         <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+                            
+                            {/* Version Card (New position) */}
+                            <div className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all cursor-default group">
+                                <Icon name="tag" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-emerald-400 transition-colors" />
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">v4.6</span>
+                            </div>
+
+                            <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+
                             {/* X Link Card */}
                             <a href="https://x.com/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
                                 <Icon name="twitter" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-blue-400 transition-colors" />
@@ -1706,9 +1865,6 @@
                                 <Icon name="heart" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-rose-400 transition-colors" />
                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.donation}</span>
                             </button>
-                        </div>
-                        <div className="text-center mt-3">
-                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-600 opacity-60">AlphaDash {t.version}</span>
                         </div>
                     </div>
 
