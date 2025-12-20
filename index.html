@@ -167,9 +167,7 @@
             return <span ref={iconRef} className={`inline-flex items-center justify-center ${className}`} style={{ width: size, height: size }}></span>;
         };
 
-        // --- 独立出来的卡片组件 ---
-
-        // 修复：添加 CustomTooltip 组件定义
+        // Custom Tooltip
         const CustomTooltip = ({ active, payload, label, t }) => {
             if (active && payload && payload.length) {
                 return (
@@ -205,10 +203,11 @@
             return null;
         };
 
+        // --- 独立出来的卡片组件 ---
         const RewardCard = ({ stats, coinPrice, currentComp, t }) => (
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-amber-200 dark:border-amber-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-amber-900/30 hover:border-amber-300 dark:hover:border-amber-500/60 transition-all duration-300 group h-full">
+            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border border-amber-200 dark:border-amber-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-amber-900/30 hover:border-amber-300 dark:hover:border-amber-500/60 transition-all duration-300 group h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-100/50 dark:from-amber-900/20 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12">
+                <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
                     <Icon name="gift" size={120} className="text-amber-600 dark:text-amber-500" />
                 </div>
                 <div className="relative z-10 h-full flex flex-col">
@@ -246,9 +245,9 @@
         );
 
         const PredictionCard = ({ stats, t }) => (
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-violet-200 dark:border-violet-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 hover:border-violet-300 dark:hover:border-violet-500/60 transition-all duration-300 group h-full">
+            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border border-violet-200 dark:border-violet-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 hover:border-violet-300 dark:hover:border-violet-500/60 transition-all duration-300 group h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-100/50 dark:from-violet-900/20 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12">
+                <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12">
                     <Icon name="sparkles" size={120} className="text-violet-600 dark:text-violet-500" />
                 </div>
                 <div className="relative z-10 h-full flex flex-col">
@@ -271,9 +270,9 @@
         );
 
         const ThresholdCard = ({ stats, t }) => (
-            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-blue-200 dark:border-blue-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500/60 transition-all duration-300 group h-full">
+            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border border-blue-200 dark:border-blue-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500/60 transition-all duration-300 group h-full">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 dark:from-blue-900/20 to-transparent opacity-50"></div>
-                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12">
+                <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
                     <Icon name="target" size={120} className="text-blue-600 dark:text-blue-500" />
                 </div>
                 <div className="relative z-10 h-full flex flex-col">
@@ -302,9 +301,9 @@
         );
 
         const GrowthCard = ({ stats, t }) => (
-            <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full ${stats.growthRate >= 0 ? 'border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-900/30' : 'border-rose-200 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 dark:hover:shadow-rose-900/30'}`}>
+            <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full ${stats.growthRate >= 0 ? 'border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-900/30' : 'border-rose-200 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 dark:hover:shadow-rose-900/30'}`}>
                 <div className={`absolute inset-0 bg-gradient-to-br ${stats.growthRate >= 0 ? 'from-emerald-100/50 dark:from-emerald-900/20' : 'from-rose-100/50 dark:from-rose-900/20'} to-transparent opacity-50`}></div>
-                <div className={`absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 ${stats.growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
+                <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${stats.growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
                     <Icon name={stats.growthRate >= 0 ? "trending-up" : "trending-down"} size={120} />
                 </div>
                 <div className="relative z-10 h-full flex flex-col">
@@ -403,9 +402,9 @@
             const activePixels = Math.floor((timeLeft.progress / 100) * totalPixels);
 
             return (
-                <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full ${borderColors[timeLeft.status]}`}>
+                <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full ${borderColors[timeLeft.status]}`}>
                     <div className={`absolute inset-0 bg-gradient-to-br ${timeLeft.status === 'endsIn' ? 'from-cyan-50/50 dark:from-cyan-900/10' : 'from-indigo-50/50 dark:from-indigo-900/10'} to-transparent opacity-50`}></div>
-                    <div className={`absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 ${statusColors[timeLeft.status]}`}>
+                    <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${statusColors[timeLeft.status]}`}>
                         <Icon name="timer" size={120} />
                     </div>
                     
@@ -538,6 +537,7 @@
         const translations = {
             zh: {
                 subtitle: "数据驱动的交易赛入榜门槛预测系统",
+                // ... (existing translations)
                 manualEntry: "手动补录",
                 importScreenshot: "截图识别",
                 analyzing: "AI 识别中...",
@@ -618,10 +618,23 @@
                 minuteLabel: "分",
                 key1Label: "主 API Key",
                 key2Label: "备用 Key 1",
-                key3Label: "备用 Key 2"
+                key3Label: "备用 Key 2",
+                // 新增
+                developer: "开发者",
+                about: "关于",
+                donation: "捐赠",
+                aboutTitle: "关于 AlphaDash",
+                aboutDesc: "AlphaDash 是一个专为交易赛设计的辅助分析工具，旨在帮助用户追踪排名门槛、分析数据趋势并制定冲榜策略。本工具完全运行在本地浏览器中，您的 API Key 和数据均存储在本地 LocalStorage，不会上传至任何服务器。",
+                donationTitle: "支持开发者",
+                donationDesc: "如果您觉得这个工具对您有帮助，欢迎打赏支持后续开发！",
+                copy: "复制",
+                copied: "已复制",
+                followX: "关注 X",
+                version: "版本 v4.6"
             },
             en: {
                 subtitle: "Data-driven Competition Threshold Prediction System",
+                // ... (existing translations)
                 manualEntry: "Entry",
                 importScreenshot: "Scan",
                 analyzing: "Scanning...",
@@ -702,7 +715,19 @@
                 minuteLabel: "Min",
                 key1Label: "Primary Key",
                 key2Label: "Backup Key 1",
-                key3Label: "Backup Key 2"
+                key3Label: "Backup Key 2",
+                // New
+                developer: "Developer",
+                about: "About",
+                donation: "Donate",
+                aboutTitle: "About AlphaDash",
+                aboutDesc: "AlphaDash is an analytical tool designed for trading competitions, helping users track threshold volumes, analyze trends, and formulate strategies. This tool runs entirely in your local browser. Your API Keys and data are stored locally in LocalStorage and are never uploaded to any server.",
+                donationTitle: "Support Development",
+                donationDesc: "If you find this tool helpful, please consider donating to support future development!",
+                copy: "Copy",
+                copied: "Copied",
+                followX: "Follow X",
+                version: "Version v4.6"
             }
         };
 
@@ -711,7 +736,7 @@
             const [theme, setTheme] = useState('dark'); 
             const t = translations[lang];
 
-            // 拖拽排序状态
+            // ... (existing state)
             const [cardOrder, setCardOrder] = useState(() => {
                 const savedOrder = localStorage.getItem('card_order');
                 return savedOrder ? JSON.parse(savedOrder) : ['reward', 'countdown', 'prediction', 'threshold', 'growth'];
@@ -748,7 +773,6 @@
                 return savedData ? JSON.parse(savedData) : initialDataMap[defaultCompetitions[0].id];
             });
 
-            // ... 其他状态 ...
             const [showCompModal, setShowCompModal] = useState(false);
             const [isAnalyzing, setIsAnalyzing] = useState(false);
             const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
@@ -780,6 +804,10 @@
 
             const [showSettingsModal, setShowSettingsModal] = useState(false);
             
+            // New Modals State
+            const [showAboutModal, setShowAboutModal] = useState(false);
+            const [showDonationModal, setShowDonationModal] = useState(false);
+            
             // Multi-Key State Management
             const [apiKeys, setApiKeys] = useState(() => {
                 const savedKeys = localStorage.getItem('gemini_api_keys');
@@ -798,6 +826,7 @@
             const [coinPrice, setCoinPrice] = useState(0); 
             const [isLivePrice, setIsLivePrice] = useState(false);
 
+            // ... (useEffect and helper functions like parseISOToUTC8, persistData, etc.) ...
             useEffect(() => {
                 const savedData = localStorage.getItem(`night_data_${currentComp.id}`);
                 if (savedData) {
@@ -904,12 +933,11 @@
             const handleDragStart = (e, index) => {
                 setDraggedItem(index);
                 e.dataTransfer.effectAllowed = 'move';
-                // 用于兼容性，虽然 react state 也可以处理
                 e.dataTransfer.setData('text/plain', index);
             };
 
             const handleDragOver = (e) => {
-                e.preventDefault(); // 允许放置
+                e.preventDefault(); 
             };
 
             const handleDrop = (e, index) => {
@@ -1276,9 +1304,21 @@
             const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
             const minutes = ['00', '15', '30', '45'];
 
+            // Function for copy text
+            const copyText = (text) => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                // Simple visual feedback could be added here
+            };
+
             return (
-                <div className="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-[#020617] dark:to-[#020617] transition-all duration-300">
-                    <div className="max-w-6xl mx-auto">
+                <div className="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-[#020617] dark:to-[#020617] transition-all duration-300 flex flex-col">
+                    <div className="max-w-6xl mx-auto flex-1 w-full">
+                        {/* Header ... */}
                         <header className="flex flex-col md:flex-row justify-between mb-8 gap-6 items-start md:items-center">
                             <div>
                                 <div className="flex flex-wrap items-center gap-4">
@@ -1353,9 +1393,9 @@
                             ))}
                         </div>
 
-                        {/* ... 后续部分保持不变 ... */}
+                        {/* ... 下方内容 ... */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* ... 下方内容 ... */}
+                            {/* ... Status Card & History ... */}
                             <div className="lg:col-span-1 flex flex-col gap-6">
                                 {/* Status Card - 升级版动态效果 */}
                                 <div className={`glass-panel p-6 rounded-3xl border relative overflow-hidden transition-all duration-500 bg-white dark:bg-slate-900/60 backdrop-blur-md group hover:-translate-y-1 hover:scale-[1.02] shadow-sm hover:shadow-xl dark:shadow-lg ${
@@ -1448,7 +1488,7 @@
                                     </label>
                                 </div>
                                 
-                                {/* History Snapshot List (Upgraded to match Core Cards) */}
+                                {/* History Snapshot List */}
                                 <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.01] flex flex-col max-h-[500px]">
                                     {/* ... history list content ... */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
@@ -1642,6 +1682,36 @@
                         </div>
                     </div>
 
+                    {/* Footer Info Cards */}
+                    <div className="max-w-6xl mx-auto w-full mt-8 mb-4">
+                        <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+                            {/* X Link Card */}
+                            <a href="https://x.com/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
+                                <Icon name="twitter" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-blue-400 transition-colors" />
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.followX}</span>
+                            </a>
+
+                            <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+
+                            {/* About Button */}
+                            <button onClick={() => setShowAboutModal(true)} className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
+                                <Icon name="info" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-indigo-400 transition-colors" />
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.about}</span>
+                            </button>
+
+                            <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+
+                            {/* Donation Button */}
+                            <button onClick={() => setShowDonationModal(true)} className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
+                                <Icon name="heart" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-rose-400 transition-colors" />
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.donation}</span>
+                            </button>
+                        </div>
+                        <div className="text-center mt-3">
+                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-600 opacity-60">AlphaDash {t.version}</span>
+                        </div>
+                    </div>
+
                     {/* ... Modals (Select, Manual, Manage, Delete, Settings) ... */}
                     {showCompModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-xl animate-in fade-in">
@@ -1716,6 +1786,288 @@
                         </div>
                     )}
 
+                    {showManualModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/80 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-6 animate-in zoom-in-95 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                <div className="flex justify-between items-center mb-6 relative z-10">
+                                    <h3 className="font-bold text-xl text-slate-800 dark:text-white">{t.manualModalTitle}</h3>
+                                    <button onClick={() => setShowManualModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-all"><Icon name="x" size={20} /></button>
+                                </div>
+                                <div className="space-y-4 relative z-10">
+                                    {/* ... Manual Modal Content ... */}
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.dateLabel}</label>
+                                        <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600 text-sm" />
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.volumeLabel}</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-xs">$</span>
+                                                <input type="number" placeholder="Threshold" value={manualVolume} onChange={e => setManualVolume(e.target.value)} className="w-full pl-6 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.userVolumeLabel}</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-xs">$</span>
+                                                <input type="number" placeholder="Your Vol" value={manualUserVolume} onChange={e => setManualUserVolume(e.target.value)} className="w-full pl-6 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.rewardLabel} ({currentComp.symbol})</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="gift" size={12}/></span>
+                                                <input type="number" placeholder="Reward" value={manualReward} onChange={e => setManualReward(e.target.value)} className="w-full pl-8 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.eligibilityLabel}</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="list-ordered" size={12}/></span>
+                                                <input type="number" placeholder="Rank" value={manualEligibility} onChange={e => setManualEligibility(e.target.value)} className="w-full pl-8 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">{t.periodLabel}</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {/* Start Date & Time */}
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">{t.startLabel}</label>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <input type="date" value={manualStartDate} onChange={e => setManualStartDate(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200" />
+                                                    <div className="flex gap-1">
+                                                        <select value={manualStartHour} onChange={e => setManualStartHour(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                            {hours.map(h => <option key={h} value={h}>{h}</option>)}
+                                                        </select>
+                                                        <select value={manualStartMinute} onChange={e => setManualStartMinute(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                            {minutes.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {/* End Date & Time */}
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">{t.endLabel}</label>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <input type="date" value={manualEndDate} onChange={e => setManualEndDate(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200" />
+                                                    <div className="flex gap-1">
+                                                        <select value={manualEndHour} onChange={e => setManualEndHour(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                            {hours.map(h => <option key={h} value={h}>{h}</option>)}
+                                                        </select>
+                                                        <select value={manualEndMinute} onChange={e => setManualEndMinute(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                            {minutes.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button onClick={() => {
+                                        updateCompetitionPeriod(manualStartDate, manualStartHour, manualStartMinute, manualEndDate, manualEndHour, manualEndMinute);
+                                        
+                                        if(manualVolume) {
+                                            const newData = [...dataList, { 
+                                                id: Date.now(), 
+                                                volume: parseFloat(manualVolume), 
+                                                userVolume: manualUserVolume ? parseFloat(manualUserVolume) : 0,
+                                                reward: manualReward ? parseFloat(manualReward) : (stats.latestReward || 0),
+                                                eligibility: manualEligibility ? parseFloat(manualEligibility) : (stats.latestEligibility || 0),
+                                                timestamp: new Date(manualDate).toISOString(), 
+                                                source: 'manual' 
+                                            }];
+                                            persistData(newData);
+                                        }
+                                        setShowManualModal(false);
+                                        setManualVolume('');
+                                        setManualUserVolume('');
+                                        setManualReward('');
+                                        setManualEligibility('');
+                                    }} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 dark:shadow-[0_0_20px_-5px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:shadow-xl dark:hover:shadow-[0_0_30px_-5px_rgba(37,99,235,0.7)] transition-all active:scale-[0.98] mt-2 border border-blue-400/20">
+                                        {t.confirmButton}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSettingsModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <Icon name="settings" className="text-blue-500" />
+                                        {t.settings}
+                                    </h3>
+                                    <button onClick={() => setShowSettingsModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 transition-all"><Icon name="x" size={20} /></button>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.apiKeyLabel}</label>
+                                        
+                                        {/* Key 1 (Primary) */}
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">{t.key1Label}</span>
+                                            <input 
+                                                type="password" 
+                                                value={tempKeys[0]} 
+                                                onChange={e => {
+                                                    const newKeys = [...tempKeys];
+                                                    newKeys[0] = e.target.value;
+                                                    setTempKeys(newKeys);
+                                                }} 
+                                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white outline-none focus:border-blue-500 text-sm" 
+                                                placeholder={t.apiKeyPlaceholder} 
+                                            />
+                                        </div>
+
+                                        {/* Key 2 (Backup) */}
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{t.key2Label}</span>
+                                            <input 
+                                                type="password" 
+                                                value={tempKeys[1]} 
+                                                onChange={e => {
+                                                    const newKeys = [...tempKeys];
+                                                    newKeys[1] = e.target.value;
+                                                    setTempKeys(newKeys);
+                                                }} 
+                                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white outline-none focus:border-blue-500 text-sm" 
+                                                placeholder={`${t.apiKeyPlaceholder} (Optional)`} 
+                                            />
+                                        </div>
+
+                                        {/* Key 3 (Backup) */}
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">{t.key3Label}</span>
+                                            <input 
+                                                type="password" 
+                                                value={tempKeys[2]} 
+                                                onChange={e => {
+                                                    const newKeys = [...tempKeys];
+                                                    newKeys[2] = e.target.value;
+                                                    setTempKeys(newKeys);
+                                                }} 
+                                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white outline-none focus:border-blue-500 text-sm" 
+                                                placeholder={`${t.apiKeyPlaceholder} (Optional)`} 
+                                            />
+                                        </div>
+
+                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">{t.apiKeyHint}</p>
+                                    </div>
+                                    
+                                    <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                        <button onClick={clearKey} className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.clearKey}</button>
+                                        <button onClick={confirmSaveKey} className="flex-1 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20">{t.saveKey}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 管理/编辑赛道模态框 */}
+                    {showManageModal && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] shadow-2xl p-6 animate-in zoom-in-95 relative overflow-hidden">
+                                {/* 背景装饰 */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 dark:bg-indigo-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2 relative z-10">
+                                    <Icon name={editingComp ? "edit-2" : "plus"} className="text-indigo-500" />
+                                    {editingComp ? t.editCompetition : t.addCompetition}
+                                </h3>
+                                
+                                <div className="space-y-4 relative z-10">
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1">{t.compName}</label>
+                                        <input 
+                                            type="text" 
+                                            value={compForm.name} 
+                                            onChange={e => setCompForm({...compForm, name: e.target.value})} 
+                                            className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400"
+                                            placeholder="e.g. Bitcoin" 
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1">{t.compSymbol}</label>
+                                        <input 
+                                            type="text" 
+                                            value={compForm.symbol} 
+                                            onChange={e => setCompForm({...compForm, symbol: e.target.value})} 
+                                            className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400 font-mono"
+                                            placeholder="e.g. BTC" 
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1">{t.compCgId}</label>
+                                        <input 
+                                            type="text" 
+                                            value={compForm.coingeckoId} 
+                                            onChange={e => setCompForm({...compForm, coingeckoId: e.target.value})} 
+                                            className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400 font-mono text-sm"
+                                            placeholder="e.g. bitcoin" 
+                                        />
+                                        <p className="text-[10px] text-slate-400 ml-1">{t.cgIdHint}</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1">{t.compColor}</label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {colorOptions.map(color => (
+                                                <button
+                                                    key={color.id}
+                                                    onClick={() => setCompForm({...compForm, color: color.id})}
+                                                    className={`w-9 h-9 rounded-full bg-gradient-to-br ${color.gradient} transition-all hover:scale-110 flex items-center justify-center shadow-sm border-2 ${compForm.color === color.id ? 'border-white dark:border-slate-800 ring-2 ring-indigo-500 scale-110' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                                                >
+                                                    {compForm.color === color.id && <Icon name="check" size={14} className="text-white drop-shadow-md" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 比赛周期设置区域 */}
+                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1 mb-2">{t.periodLabel}</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 ml-1 block">{t.startLabel}</label>
+                                                <input 
+                                                    type="date" 
+                                                    value={compForm.startDate} 
+                                                    onChange={e => setCompForm({...compForm, startDate: e.target.value})} 
+                                                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 ml-1 block">{t.endLabel}</label>
+                                                <input 
+                                                    type="date" 
+                                                    value={compForm.endDate} 
+                                                    onChange={e => setCompForm({...compForm, endDate: e.target.value})} 
+                                                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4 mt-2">
+                                        <button onClick={() => setShowManageModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
+                                        <button onClick={handleSaveCompetition} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/30">{t.save}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* 删除确认模态框 */}
                     {showDeleteModal && (
                          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
@@ -1731,6 +2083,57 @@
                                     <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
                                     <button onClick={confirmDeleteCompetition} className="flex-1 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-500 transition-colors shadow-lg shadow-rose-500/30">{t.confirmDelete}</button>
                                 </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* About Modal */}
+                    {showAboutModal && (
+                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 dark:bg-indigo-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                <div className="text-center mb-6 relative z-10">
+                                    <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 shadow-sm">
+                                        <Icon name="info" size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{t.aboutTitle}</h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{t.aboutDesc}</p>
+                                </div>
+                                <button onClick={() => setShowAboutModal(false)} className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Donation Modal */}
+                    {showDonationModal && (
+                        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-rose-100 dark:bg-rose-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                <div className="text-center mb-6 relative z-10">
+                                    <div className="w-16 h-16 bg-rose-50 dark:bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-500 border border-rose-100 dark:border-rose-500/20 shadow-sm">
+                                        <Icon name="heart" size={32} />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">{t.donationTitle}</h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{t.donationDesc}</p>
+                                    
+                                    <div className="space-y-3">
+                                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between group cursor-pointer hover:border-indigo-500/50 transition-colors" onClick={() => copyText('0x1234...5678')}>
+                                            <div className="text-left">
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase">USDT (BEP20)</div>
+                                                <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">0x1234...5678</div>
+                                            </div>
+                                            <Icon name="copy" size={16} className="text-slate-400 group-hover:text-indigo-500" />
+                                        </div>
+                                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between group cursor-pointer hover:border-indigo-500/50 transition-colors" onClick={() => copyText('0x1234...5678')}>
+                                            <div className="text-left">
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase">ETH (ERC20)</div>
+                                                <div className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">0x1234...5678</div>
+                                            </div>
+                                            <Icon name="copy" size={16} className="text-slate-400 group-hover:text-indigo-500" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <button onClick={() => setShowDonationModal(false)} className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
                             </div>
                         </div>
                     )}
