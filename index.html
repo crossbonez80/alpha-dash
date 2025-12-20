@@ -764,10 +764,19 @@
             const openManageModal = (comp = null) => {
                 if (comp) {
                     setEditingComp(comp);
-                    setCompForm({ name: comp.name, symbol: comp.symbol, coingeckoId: comp.coingeckoId, color: comp.color });
+                    // 修复：加载现有赛道的开始和结束时间 (截取 YYYY-MM-DD 部分用于 input type="date")
+                    setCompForm({ 
+                        name: comp.name, 
+                        symbol: comp.symbol, 
+                        coingeckoId: comp.coingeckoId, 
+                        color: comp.color,
+                        startDate: comp.startDate ? comp.startDate.split('T')[0] : '',
+                        endDate: comp.endDate ? comp.endDate.split('T')[0] : ''
+                    });
                 } else {
                     setEditingComp(null);
-                    setCompForm({ name: '', symbol: '', coingeckoId: '', color: 'indigo' });
+                    // 新增赛道默认值
+                    setCompForm({ name: '', symbol: '', coingeckoId: '', color: 'indigo', startDate: '', endDate: '' });
                 }
                 setShowManageModal(true);
             };
@@ -775,14 +784,33 @@
             const handleSaveCompetition = () => {
                 if (!compForm.name || !compForm.symbol) return;
                 const selectedColor = colorOptions.find(c => c.id === compForm.color);
+                
+                // 处理时间：将日期字符串转换为 ISO 格式 (默认设为当天的 00:00:00)
+                const formatISODate = (dateStr, isEnd = false) => {
+                    if (!dateStr) return null;
+                    const date = new Date(dateStr);
+                    if (isEnd) {
+                        // 结束日期默认设为当天的 23:59:59
+                        date.setHours(23, 59, 59, 999);
+                    } else {
+                        date.setHours(0, 0, 0, 0);
+                    }
+                    return date.toISOString();
+                };
+
                 const newComp = {
                     id: editingComp ? editingComp.id : `custom-${Date.now()}`,
-                    ...compForm,
+                    name: compForm.name,
+                    symbol: compForm.symbol,
+                    coingeckoId: compForm.coingeckoId,
+                    color: compForm.color,
                     icon: selectedColor.icon,
                     gradient: selectedColor.gradient,
-                    startDate: editingComp ? editingComp.startDate : null,
-                    endDate: editingComp ? editingComp.endDate : null
+                    // 修复：保存表单中的时间设置，如果表单没填则保留原值(仅编辑模式)，或为null
+                    startDate: compForm.startDate ? formatISODate(compForm.startDate) : (editingComp ? editingComp.startDate : null),
+                    endDate: compForm.endDate ? formatISODate(compForm.endDate, true) : (editingComp ? editingComp.endDate : null)
                 };
+
                 if (editingComp) {
                     setCompetitions(prev => prev.map(c => c.id === editingComp.id ? newComp : c));
                     if (currentComp.id === editingComp.id) setCurrentComp(newComp);
@@ -1826,7 +1854,32 @@
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 pt-4 mt-6">
+                                    {/* 新增：比赛周期设置区域 */}
+                                    <div className="pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1 mb-2">{t.periodLabel}</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 ml-1 block">{t.startLabel}</label>
+                                                <input 
+                                                    type="date" 
+                                                    value={compForm.startDate} 
+                                                    onChange={e => setCompForm({...compForm, startDate: e.target.value})} 
+                                                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-bold text-slate-400 ml-1 block">{t.endLabel}</label>
+                                                <input 
+                                                    type="date" 
+                                                    value={compForm.endDate} 
+                                                    onChange={e => setCompForm({...compForm, endDate: e.target.value})} 
+                                                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4 mt-2">
                                         <button onClick={() => setShowManageModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
                                         <button onClick={handleSaveCompetition} className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-500/30">{t.save}</button>
                                     </div>
