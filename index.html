@@ -642,6 +642,23 @@
             }, [chartData]);
 
             // ... helper functions ...
+            const handleOpenManualEntry = () => {
+                // Pre-fill with latest known data
+                setManualReward(stats.latestReward || '');
+                setManualEligibility(stats.latestEligibility || '');
+                
+                // Dates are already synced via useEffect from currentComp, but good to ensure
+                setManualStartDate(currentComp.startDate || '');
+                setManualEndDate(currentComp.endDate || '');
+                
+                // Reset daily inputs
+                setManualVolume('');
+                setManualUserVolume('');
+                setManualDate(new Date().toISOString().split('T')[0]);
+                
+                setShowManualModal(true);
+            };
+
             const openManageModal = (comp = null) => {
                 if (comp) {
                     setEditingComp(comp);
@@ -764,7 +781,7 @@
                         5. "eligibility": The rank limit or number of winners (e.g. "Top 2000", "1-500"). Return the maximum rank number (e.g. 2000).
                         6. "promotionPeriod": Extract start and end dates from text like "Promotion Period: 2023-10-01 to 2023-10-30" or "Ends in X days". Format as ISO date strings (YYYY-MM-DD). If "Ends in" is found, calculate end date from now.
                         
-                        Strictly return JSON string: { "volume": 123.45, "reward": 100, "userVolume": 200.5, "dataCutoff": "2023-10-25T14:30:00", "eligibility": 20500, "promotionStart": "2023-10-01", "promotionEnd": "2023-10-30" }
+                        Strictly return JSON string: { "volume": 123.45, "reward": 100, "userVolume": 200.5, "dataCutoff": "2023-10-25T14:30:00", "eligibility": 2000, "promotionStart": "2023-10-01", "promotionEnd": "2023-10-30" }
                     `;
 
                     const result = await fetchWithRetry(
@@ -997,15 +1014,21 @@
                                     </div>
                                     
                                     {/* Footer: Mini Badges - Left & Right Aligned (No Icons) */}
-                                    <div className="flex items-center justify-between mt-2">
+                                    <div className="flex items-center justify-between mt-auto">
                                         {/* Token Badge (Left) */}
                                         <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
-                                            <span>{stats.latestReward ? stats.latestReward.toLocaleString() : '-'} {currentComp.symbol}</span>
+                                            <span>
+                                                {stats.latestReward ? stats.latestReward.toLocaleString() : '-'} 
+                                                <span className="opacity-60 ml-0.5">{currentComp.symbol}</span>
+                                            </span>
                                         </div>
 
                                         {/* Eligibility Badge (Right) */}
                                         <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
-                                            <span>Top {stats.latestEligibility ? stats.latestEligibility : '-'}</span>
+                                            <span>
+                                                <span className="opacity-60 mr-0.5">TOP</span> 
+                                                {stats.latestEligibility ? stats.latestEligibility : '-'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -1140,7 +1163,7 @@
                                 {/* Action Buttons Grid - Moved & Compacted */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <button 
-                                        onClick={() => setShowManualModal(true)} 
+                                        onClick={handleOpenManualEntry} 
                                         className="relative group overflow-hidden px-4 py-3 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-3"
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -1407,66 +1430,6 @@
                                         </div>
                                         <div className="text-sm font-bold">{t.addCompetition}</div>
                                     </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {showDeleteModal && (
-                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
-                            <div className="bg-white dark:bg-[#0f172a] border border-rose-100 dark:border-rose-500/30 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95">
-                                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-500 mb-4 flex items-center gap-2">
-                                    <Icon name="alert-triangle" className="text-rose-600 dark:text-rose-500" />
-                                    {t.deleteConfirmTitle}
-                                </h3>
-                                <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
-                                    {t.deleteConfirmDesc}
-                                </p>
-                                <div className="flex gap-3">
-                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
-                                    <button onClick={confirmDeleteCompetition} className="flex-1 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-500 transition-colors shadow-lg shadow-rose-500/30 dark:shadow-rose-900/20">{t.confirmDelete}</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {showManageModal && (
-                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
-                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95">
-                                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                                    <Icon name={editingComp ? "edit" : "plus-circle"} className="text-blue-600 dark:text-blue-500" />
-                                    {editingComp ? t.editCompetition : t.addCompetition}
-                                </h3>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compName}</label>
-                                        <input type="text" value={compForm.name} onChange={e => setCompForm({...compForm, name: e.target.value})} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500" placeholder="e.g. Bitcoin" />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compSymbol}</label>
-                                        <input type="text" value={compForm.symbol} onChange={e => setCompForm({...compForm, symbol: e.target.value.toUpperCase()})} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500 font-mono" placeholder="e.g. BTC" />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compCgId}</label>
-                                        <input type="text" value={compForm.coingeckoId} onChange={e => setCompForm({...compForm, coingeckoId: e.target.value.toLowerCase()})} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500 font-mono" placeholder="e.g. bitcoin" />
-                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{t.cgIdHint}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compColor}</label>
-                                        <div className="flex gap-2 flex-wrap">
-                                            {colorOptions.map(opt => (
-                                                <button
-                                                    key={opt.id}
-                                                    onClick={() => setCompForm({...compForm, color: opt.id})}
-                                                    className={`w-8 h-8 rounded-full bg-gradient-to-br ${opt.gradient} border-2 transition-transform hover:scale-110 ${compForm.color === opt.id ? 'border-slate-400 dark:border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
-                                        <button onClick={() => setShowManageModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
-                                        <button onClick={handleSaveCompetition} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20">{t.save}</button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
