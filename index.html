@@ -28,6 +28,9 @@
                             card: '#0f172a',
                             border: 'rgba(255, 255, 255, 0.08)'
                         }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -124,7 +127,7 @@
 
         // 默认比赛配置
         const defaultCompetitions = [
-            { id: 'night', name: 'Midnight', symbol: 'NIGHT', coingeckoId: 'midnight-3', color: 'indigo', icon: 'moon', gradient: 'from-indigo-500 to-purple-600' },
+            { id: 'night', name: 'Midnight', symbol: 'NIGHT', coingeckoId: 'midnight-3', color: 'indigo', icon: 'moon', gradient: 'from-indigo-500 to-purple-600', startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0] },
             { id: 'btc', name: 'Bitcoin', symbol: 'BTC', coingeckoId: 'bitcoin', color: 'orange', icon: 'bitcoin', gradient: 'from-orange-500 to-amber-500' },
             { id: 'eth', name: 'Ethereum', symbol: 'ETH', coingeckoId: 'ethereum', color: 'blue', icon: 'zap', gradient: 'from-blue-500 to-cyan-500' },
             { id: 'sol', name: 'Solana', symbol: 'SOL', coingeckoId: 'solana', color: 'emerald', icon: 'layers', gradient: 'from-emerald-400 to-teal-500' }
@@ -143,8 +146,8 @@
         // 默认初始数据
         const initialDataMap = {
             night: [
-                { id: 'init-1', volume: 36129.54, userVolume: 42000.00, timestamp: new Date(Date.now() - 172800000).toISOString(), source: 'default', reward: 1200, eligibility: 2000 },
-                { id: 'init-2', volume: 60689.17, userVolume: 58000.00, timestamp: new Date(Date.now() - 86400000).toISOString(), source: 'default', reward: 1200, eligibility: 2000 },
+                { id: 'init-1', volume: 36129.54, userVolume: 42000.00, timestamp: new Date(Date.now() - 172800000).toISOString(), source: 'default', reward: 1700, eligibility: 20500 },
+                { id: 'init-2', volume: 60689.17, userVolume: 58000.00, timestamp: new Date(Date.now() - 86400000).toISOString(), source: 'default', reward: 1700, eligibility: 20500 },
             ],
         };
 
@@ -172,7 +175,7 @@
                 volumeLabel: "入榜门槛交易量 (USD)",
                 userVolumeLabel: "您的交易量 (USD) - 可选",
                 rewardLabel: "奖励数量 - 可选",
-                eligibilityLabel: "合格名次 (如 2000)",
+                eligibilityLabel: "合格名次 (如 20500)",
                 confirmButton: "确认录入",
                 aiPhase: "阶段",
                 aiRisk: "风险评级",
@@ -219,12 +222,15 @@
                 clearKey: "清除",
                 apiKeyHint: "API Key 仅保存在本地浏览器中，用于调用 Gemini AI 功能。",
                 errorApiKey: "未检测到 API Key。请在设置中输入您的 Gemini API Key 以使用 AI 功能。",
-                safeGap: "安全差距",
-                gapLead: "当前领先",
-                gapLag: "当前落后",
-                cardEligibility: "合格名次",
-                rewardSource: "来自截图识别",
-                dataCutoff: "更新于",
+                cardCountdown: "比赛倒计时",
+                startsIn: "距离开始",
+                endsIn: "距离结束",
+                ended: "已结束",
+                periodLabel: "比赛周期 (可选)",
+                startLabel: "开始时间",
+                endLabel: "结束时间",
+                subCardReward: "单号代币",
+                subCardRank: "入围名次"
             },
             en: {
                 subtitle: "Data-driven Competition Threshold Prediction System",
@@ -248,7 +254,7 @@
                 volumeLabel: "Threshold Volume (USD)",
                 userVolumeLabel: "Your Volume (USD) - Optional",
                 rewardLabel: "Reward Amount - Optional",
-                eligibilityLabel: "Eligibility Rank (e.g. 2000)",
+                eligibilityLabel: "Eligibility Rank (e.g. 20500)",
                 confirmButton: "Confirm Entry",
                 aiPhase: "Phase",
                 aiRisk: "Risk Level",
@@ -295,23 +301,24 @@
                 clearKey: "Clear",
                 apiKeyHint: "API Key is stored locally in your browser and used for AI features.",
                 errorApiKey: "API Key missing. Please enter your Gemini API Key in Settings to use AI features.",
-                safeGap: "Safety Gap",
-                gapLead: "Current Lead",
-                gapLag: "Current Lag",
-                cardEligibility: "Eligibility Rank",
-                rewardSource: "From Screenshot",
-                dataCutoff: "Updated at",
+                cardCountdown: "Time Remaining",
+                startsIn: "Starts In",
+                endsIn: "Ends In",
+                ended: "Ended",
+                periodLabel: "Competition Period (Optional)",
+                startLabel: "Start Date",
+                endLabel: "End Date",
+                subCardReward: "Tokens/User",
+                subCardRank: "Rank Limit"
             }
         };
 
-        // Tooltip 组件 (依赖 t 翻译配置)
+        // Tooltip 组件
         const CustomTooltip = ({ active, payload, label, t }) => {
             if (active && payload && payload.length) {
                 return (
                     <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] min-w-[200px]">
                         <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-3">{label}</p>
-                        
-                        {/* Threshold - Blue */}
                         <div className="flex items-center justify-between gap-4 mb-2">
                             <div className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-md"></div>
@@ -319,8 +326,6 @@
                             </div>
                             <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">${payload[0].value.toLocaleString()}</span>
                         </div>
-
-                        {/* User Volume - Green */}
                         {payload[1] && (
                             <div className="flex items-center justify-between gap-4">
                                 <div className="flex items-center gap-2">
@@ -332,7 +337,6 @@
                                 </span>
                             </div>
                         )}
-                        
                         {payload[1] && (
                             <div className={`mt-3 pt-2 border-t border-slate-100 dark:border-white/10 text-xs font-bold flex justify-between ${payload[1].value >= payload[0].value ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
                                 <span>{payload[1].value >= payload[0].value ? t.statusSafe : t.statusRisk}</span>
@@ -343,6 +347,145 @@
                 );
             }
             return null;
+        };
+
+        // 倒计时组件 - 现代 60 秒跑马灯版 (彩虹像素风格)
+        const CountdownCard = ({ startDate, endDate, t }) => {
+            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'ended', progress: 100 });
+
+            useEffect(() => {
+                const calculateTime = () => {
+                    const now = new Date();
+                    const currentTime = now.getTime();
+                    const start = startDate ? new Date(startDate).getTime() : null;
+                    const end = endDate ? new Date(endDate).getTime() : null;
+                    const currentSeconds = now.getSeconds();
+
+                    if (!start || !end) return;
+
+                    let targetDate, status;
+
+                    if (currentTime < start) {
+                        targetDate = start;
+                        status = 'startsIn';
+                    } else if (currentTime >= start && currentTime <= end) {
+                        targetDate = end;
+                        status = 'endsIn';
+                    } else {
+                        status = 'ended';
+                        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, status, progress: 100 });
+                        return;
+                    }
+
+                    const difference = targetDate - currentTime;
+                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000); 
+
+                    // 0-60s progress for pixel bar
+                    const secProgress = (currentSeconds / 60) * 100;
+
+                    setTimeLeft({ days, hours, minutes, seconds, status, progress: secProgress });
+                };
+
+                calculateTime();
+                const timer = setInterval(calculateTime, 1000); 
+                return () => clearInterval(timer);
+            }, [startDate, endDate]);
+
+            const statusColors = {
+                startsIn: 'text-indigo-600 dark:text-indigo-400',
+                endsIn: 'text-cyan-600 dark:text-cyan-400',
+                ended: 'text-slate-400 dark:text-slate-500'
+            };
+
+            const borderColors = {
+                startsIn: 'border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-300 dark:hover:border-indigo-500/60',
+                endsIn: 'border-cyan-200 dark:border-cyan-500/30 hover:border-cyan-300 dark:hover:border-cyan-500/60',
+                ended: 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+            };
+
+            // Generate 60 pixel blocks
+            const totalPixels = 40; 
+            const activePixels = Math.floor((timeLeft.progress / 100) * totalPixels);
+
+            return (
+                <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02] ${borderColors[timeLeft.status]}`}>
+                    {/* Background Subtle Gradient */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${timeLeft.status === 'endsIn' ? 'from-cyan-50/50 dark:from-cyan-900/10' : 'from-indigo-50/50 dark:from-indigo-900/10'} to-transparent opacity-50`}></div>
+                    
+                    {/* Background Icon */}
+                    <div className={`absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 ${statusColors[timeLeft.status]}`}>
+                        <Icon name="timer" size={120} />
+                    </div>
+                    
+                    <div className="relative z-10">
+                        <div>
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center bg-white/50 dark:bg-white/5 ${statusColors[timeLeft.status]} border-white/20`}>
+                                    <Icon name={timeLeft.status === 'ended' ? "flag" : "clock"} size={18} />
+                                </div>
+                                <div className={`text-xs font-bold uppercase tracking-widest opacity-70 ${statusColors[timeLeft.status]}`}>{t.cardCountdown}</div>
+                            </div>
+                            
+                            {timeLeft.status === 'ended' ? (
+                                <div className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-500 dark:text-slate-400">
+                                    {t.ended}
+                                </div>
+                            ) : (
+                                <div className={`flex items-baseline gap-1 ${statusColors[timeLeft.status]}`}>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.days}</span>
+                                    <span className="text-xs font-bold uppercase mr-1">d</span>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.hours}</span>
+                                    <span className="text-xs font-bold uppercase mr-1">h</span>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg opacity-80 text-slate-900 dark:text-white">{timeLeft.minutes}</span>
+                                    <span className="text-xs font-bold uppercase mr-1 opacity-80">m</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Rainbow Pixel Marquee */}
+                        {timeLeft.status !== 'ended' && (
+                            <div className="mt-2 relative">
+                                <div className="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
+                                    <span>{t[timeLeft.status]}</span>
+                                    <span className="tabular-nums">{timeLeft.seconds}s</span>
+                                </div>
+                                
+                                <div className="flex justify-between gap-[2px] h-3 w-full">
+                                    {[...Array(totalPixels)].map((_, i) => {
+                                        const isActive = i < activePixels;
+                                        // Calculate Rainbow Hue (0-360) based on position
+                                        const hue = (i / totalPixels) * 360;
+                                            
+                                        const colorStyle = isActive 
+                                            ? { 
+                                                backgroundColor: `hsl(${hue}, 100%, 60%)`, // Vibrant Rainbow
+                                                boxShadow: `0 0 4px hsl(${hue}, 100%, 60%)` // Glow
+                                              }
+                                            : {};
+                                        
+                                        return (
+                                            <div 
+                                                key={i}
+                                                className={`h-full flex-1 rounded-sm transition-all duration-300 ${isActive ? 'scale-y-110 opacity-100' : 'bg-slate-200 dark:bg-slate-800/60 opacity-30 scale-y-75'}`}
+                                                style={colorStyle}
+                                            ></div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                        
+                        {timeLeft.status === 'ended' && startDate && endDate && (
+                             <div className="mt-2 text-[10px] font-mono text-slate-400 border-t border-slate-100 dark:border-slate-800 pt-2">
+                                {new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}
+                             </div>
+                        )}
+                    </div>
+                </div>
+            );
         };
 
         const App = () => {
@@ -384,11 +527,15 @@
             const [aiStrategy, setAiStrategy] = useState(null);
             const [error, setError] = useState(null);
             
+            // Manual Entry State
             const [manualVolume, setManualVolume] = useState('');
             const [manualUserVolume, setManualUserVolume] = useState('');
             const [manualReward, setManualReward] = useState('');
             const [manualEligibility, setManualEligibility] = useState('');
             const [manualDate, setManualDate] = useState(new Date().toISOString().split('T')[0]);
+            // New Date inputs for manual modal
+            const [manualStartDate, setManualStartDate] = useState('');
+            const [manualEndDate, setManualEndDate] = useState('');
 
             const [showManageModal, setShowManageModal] = useState(false);
             const [editingComp, setEditingComp] = useState(null);
@@ -407,6 +554,7 @@
             const [coinPrice, setCoinPrice] = useState(0); 
             const [isLivePrice, setIsLivePrice] = useState(false);
 
+            // Separate effect for data loading - depends ONLY on ID
             useEffect(() => {
                 const savedData = localStorage.getItem(`night_data_${currentComp.id}`);
                 if (savedData) {
@@ -418,7 +566,13 @@
                 setError(null);
                 setCoinPrice(0);
                 setIsLivePrice(false);
-            }, [currentComp.id]);
+            }, [currentComp.id]); 
+
+            // Separate effect for pre-filling date inputs - depends on currentComp object
+            useEffect(() => {
+                setManualStartDate(currentComp.startDate || '');
+                setManualEndDate(currentComp.endDate || '');
+            }, [currentComp]);
 
             useEffect(() => {
                 if (dataList.length > 0 || initialDataMap[currentComp.id]) {
@@ -468,7 +622,7 @@
             }, [dataList, t.day]);
 
             const stats = useMemo(() => {
-                if (chartData.length < 1) return { current: 0, growthRate: 0, predictedNext: 0, maxVolume: 0, latestReward: 0, latestUserVolume: 0, gap: 0, latestTimestamp: null, latestEligibility: 0 };
+                if (chartData.length < 1) return { current: 0, growthRate: 0, predictedNext: 0, maxVolume: 0, latestReward: 0, latestUserVolume: 0, latestEligibility: 0 };
                 const current = chartData[chartData.length - 1].volume;
                 const previous = chartData[chartData.length - 2]?.volume || current;
                 const growthRate = previous === 0 ? 0 : ((current - previous) / previous) * 100;
@@ -483,10 +637,8 @@
                 const latestEligibility = latestEligibilityItem ? latestEligibilityItem.eligibility : 0;
                 
                 const latestUserVolume = chartData[chartData.length - 1]?.userVolume || 0;
-                const gap = latestUserVolume - current;
-                const latestTimestamp = chartData[chartData.length - 1].timestamp;
 
-                return { current, growthRate, predictedNext: current * (1 + (growthRate / 100)), maxVolume, latestReward, latestUserVolume, gap, latestTimestamp, latestEligibility };
+                return { current, growthRate, predictedNext: current * (1 + (growthRate / 100)), maxVolume, latestReward, latestUserVolume, latestEligibility };
             }, [chartData]);
 
             // ... helper functions ...
@@ -508,7 +660,9 @@
                     id: editingComp ? editingComp.id : `custom-${Date.now()}`,
                     ...compForm,
                     icon: selectedColor.icon,
-                    gradient: selectedColor.gradient
+                    gradient: selectedColor.gradient,
+                    startDate: editingComp ? editingComp.startDate : null,
+                    endDate: editingComp ? editingComp.endDate : null
                 };
                 if (editingComp) {
                     setCompetitions(prev => prev.map(c => c.id === editingComp.id ? newComp : c));
@@ -608,8 +762,9 @@
                         3. "userVolume": My/User's personal trading volume if visible (look for 'My Volume', 'Personal', 'Your Volume'). Return null if not found.
                         4. "dataCutoff": The "Data cutoff time" or "Last Updated" timestamp visible in the image. Please format it as a standard ISO string or complete date string.
                         5. "eligibility": The rank limit or number of winners (e.g. "Top 2000", "1-500"). Return the maximum rank number (e.g. 2000).
+                        6. "promotionPeriod": Extract start and end dates from text like "Promotion Period: 2023-10-01 to 2023-10-30" or "Ends in X days". Format as ISO date strings (YYYY-MM-DD). If "Ends in" is found, calculate end date from now.
                         
-                        Strictly return JSON string: { "volume": 123.45, "reward": 100, "userVolume": 200.5, "dataCutoff": "2023-10-25T14:30:00", "eligibility": 2000 }
+                        Strictly return JSON string: { "volume": 123.45, "reward": 100, "userVolume": 200.5, "dataCutoff": "2023-10-25T14:30:00", "eligibility": 20500, "promotionStart": "2023-10-01", "promotionEnd": "2023-10-30" }
                     `;
 
                     const result = await fetchWithRetry(
@@ -632,32 +787,56 @@
                     if (!text) throw new Error(t.errorRecognize);
 
                     const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    // Improved JSON parsing fallback
                     let parsedData;
                     try {
-                        parsedData = JSON.parse(jsonStr);
+                        const firstBrace = jsonStr.indexOf('{');
+                        const lastBrace = jsonStr.lastIndexOf('}');
+                        if (firstBrace !== -1 && lastBrace !== -1) {
+                            parsedData = JSON.parse(jsonStr.substring(firstBrace, lastBrace + 1));
+                        } else {
+                            throw new Error("No JSON found");
+                        }
                     } catch (e) {
+                         // Very basic fallback
                          const val = parseFloat(text.trim().replace(/[^0-9.]/g, ''));
                          parsedData = { volume: val, reward: null, userVolume: null };
                     }
 
-                    if (parsedData && !isNaN(parsedData.volume) && parsedData.volume > 0) {
-                        let timestamp = new Date().toISOString();
-                        if (parsedData.dataCutoff) {
-                            const parsedTime = new Date(parsedData.dataCutoff);
-                            if (!isNaN(parsedTime.getTime())) {
-                                timestamp = parsedTime.toISOString();
-                            }
+                    if (parsedData) {
+                        // 1. Update Competition Metadata if present
+                        if (parsedData.promotionStart || parsedData.promotionEnd) {
+                            const updatedComp = { 
+                                ...currentComp, 
+                                startDate: parsedData.promotionStart || currentComp.startDate,
+                                endDate: parsedData.promotionEnd || currentComp.endDate
+                            };
+                            // NOTE: Updating competition does NOT trigger data reload now
+                            setCompetitions(prev => prev.map(c => c.id === currentComp.id ? updatedComp : c));
+                            setCurrentComp(updatedComp);
                         }
 
-                        setDataList(prev => [...prev, { 
-                            id: Date.now(), 
-                            volume: parsedData.volume, 
-                            userVolume: parsedData.userVolume || 0,
-                            reward: parsedData.reward || (stats.latestReward || 0), 
-                            eligibility: parsedData.eligibility || (stats.latestEligibility || 0),
-                            timestamp: timestamp, 
-                            source: 'ai' 
-                        }]);
+                        // 2. Add Data Point
+                        if (!isNaN(parsedData.volume) && parsedData.volume > 0) {
+                            let timestamp = new Date().toISOString();
+                            if (parsedData.dataCutoff) {
+                                const parsedTime = new Date(parsedData.dataCutoff);
+                                if (!isNaN(parsedTime.getTime())) {
+                                    timestamp = parsedTime.toISOString();
+                                }
+                            }
+
+                            setDataList(prev => [...prev, { 
+                                id: Date.now(), 
+                                volume: parsedData.volume, 
+                                userVolume: parsedData.userVolume || 0,
+                                reward: parsedData.reward || (stats.latestReward || 0), 
+                                eligibility: parsedData.eligibility || (stats.latestEligibility || 0),
+                                timestamp: timestamp, 
+                                source: 'ai' 
+                            }]);
+                        }
                     } else {
                         throw new Error(t.errorValid);
                     }
@@ -722,6 +901,18 @@
                 } finally {
                     setIsGeneratingStrategy(false);
                 }
+            };
+
+            // Function to update competition dates from Manual Entry Modal
+            const updateCompetitionPeriod = (start, end) => {
+                if (!start && !end) return;
+                const updatedComp = { 
+                    ...currentComp, 
+                    startDate: start || currentComp.startDate,
+                    endDate: end || currentComp.endDate
+                };
+                setCompetitions(prev => prev.map(c => c.id === currentComp.id ? updatedComp : c));
+                setCurrentComp(updatedComp);
             };
 
             return (
@@ -798,19 +989,32 @@
                                         <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"><Icon name="coins" size={18} /></div>
                                         <div className="text-amber-900/70 dark:text-amber-200/70 text-xs font-bold uppercase tracking-widest">{t.rewardEst}</div>
                                     </div>
-                                    <div className="flex items-baseline gap-0.5 text-amber-950 dark:text-white">
+                                    <div className="flex items-baseline gap-0.5 text-amber-950 dark:text-white mb-3">
                                         <span className="text-xl font-bold text-amber-600/70 dark:text-amber-400/70">$</span>
                                         <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
                                             {stats.latestReward ? (stats.latestReward * coinPrice).toLocaleString(undefined, {maximumFractionDigits: 2}) : '0.00'}
                                         </span>
                                     </div>
-                                    <div className="mt-2 text-xs font-medium text-amber-700/80 dark:text-amber-400/80 flex items-center gap-1">
-                                        ≈ {stats.latestReward ? stats.latestReward.toLocaleString() : '-'} {currentComp.symbol} {t.rewardNote}
+                                    
+                                    {/* Footer: Mini Badges - Left & Right Aligned (No Icons) */}
+                                    <div className="flex items-center justify-between mt-2">
+                                        {/* Token Badge (Left) */}
+                                        <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
+                                            <span>{stats.latestReward ? stats.latestReward.toLocaleString() : '-'} {currentComp.symbol}</span>
+                                        </div>
+
+                                        {/* Eligibility Badge (Right) */}
+                                        <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
+                                            <span>Top {stats.latestEligibility ? stats.latestEligibility : '-'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Card 2: Prediction */}
+                            {/* Card 2: Countdown (New!) */}
+                            <CountdownCard startDate={currentComp.startDate} endDate={currentComp.endDate} t={t} />
+
+                            {/* Card 3: Prediction */}
                             <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-violet-200 dark:border-violet-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 hover:border-violet-300 dark:hover:border-violet-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
                                 <div className="absolute inset-0 bg-gradient-to-br from-violet-100/50 dark:from-violet-900/20 to-transparent opacity-50"></div>
                                 <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12">
@@ -831,7 +1035,7 @@
                                 </div>
                             </div>
 
-                            {/* Card 3: Threshold */}
+                            {/* Card 4: Threshold */}
                             <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-blue-200 dark:border-blue-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 dark:from-blue-900/20 to-transparent opacity-50"></div>
                                 <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12">
@@ -854,36 +1058,6 @@
                                             <Icon name="user" size={10} />
                                             ${stats.latestUserVolume.toLocaleString()}
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Card 4: Eligibility (Replaces Reward Quantity) */}
-                            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-cyan-200 dark:border-cyan-500/30 shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
-                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-100/50 dark:from-cyan-900/20 to-transparent opacity-50"></div>
-                                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 text-cyan-600 dark:text-cyan-500">
-                                    <Icon name="users" size={120} />
-                                </div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-cyan-100 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/20">
-                                            <Icon name="list-ordered" size={18} />
-                                        </div>
-                                        <div className="text-cyan-900/70 dark:text-cyan-200/70 text-xs font-bold uppercase tracking-widest">{t.cardEligibility}</div>
-                                    </div>
-                                    <div className="flex items-baseline gap-1 text-cyan-950 dark:text-white">
-                                        <span className="text-xl font-bold opacity-70">Top</span>
-                                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
-                                            {stats.latestEligibility ? stats.latestEligibility.toLocaleString() : '-'}
-                                        </span>
-                                    </div>
-                                    <div className="mt-2 text-xs font-medium text-cyan-700/80 dark:text-cyan-400/80">
-                                        {stats.latestTimestamp ? (
-                                            <span className="flex items-center gap-1">
-                                                <Icon name="clock" size={10} />
-                                                {t.dataCutoff} {new Date(stats.latestTimestamp).toLocaleString(undefined, {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'})}
-                                            </span>
-                                        ) : t.rewardSource}
                                     </div>
                                 </div>
                             </div>
@@ -1339,17 +1513,36 @@
                                             <input type="number" placeholder="e.g. 2000" value={manualEligibility} onChange={e => setManualEligibility(e.target.value)} className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
                                         </div>
                                     </div>
+                                    
+                                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">{t.periodLabel}</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">{t.startLabel}</label>
+                                                <input type="date" value={manualStartDate} onChange={e => setManualStartDate(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200" />
+                                            </div>
+                                            <div>
+                                                <label className="text-[9px] font-bold text-slate-400 mb-1 block">{t.endLabel}</label>
+                                                <input type="date" value={manualEndDate} onChange={e => setManualEndDate(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200" />
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <button onClick={() => {
-                                        if(!manualVolume) return;
-                                        setDataList(prev => [...prev, { 
-                                            id: Date.now(), 
-                                            volume: parseFloat(manualVolume), 
-                                            userVolume: manualUserVolume ? parseFloat(manualUserVolume) : 0,
-                                            reward: manualReward ? parseFloat(manualReward) : (stats.latestReward || 0),
-                                            eligibility: manualEligibility ? parseFloat(manualEligibility) : (stats.latestEligibility || 0),
-                                            timestamp: new Date(manualDate).toISOString(), 
-                                            source: 'manual' 
-                                        }]);
+                                        updateCompetitionPeriod(manualStartDate, manualEndDate);
+                                        
+                                        if(manualVolume) {
+                                            const newData = [...dataList, { 
+                                                id: Date.now(), 
+                                                volume: parseFloat(manualVolume), 
+                                                userVolume: manualUserVolume ? parseFloat(manualUserVolume) : 0,
+                                                reward: manualReward ? parseFloat(manualReward) : (stats.latestReward || 0),
+                                                eligibility: manualEligibility ? parseFloat(manualEligibility) : (stats.latestEligibility || 0),
+                                                timestamp: new Date(manualDate).toISOString(), 
+                                                source: 'manual' 
+                                            }];
+                                            setDataList(newData);
+                                        }
                                         setShowManualModal(false);
                                         setManualVolume('');
                                         setManualUserVolume('');
