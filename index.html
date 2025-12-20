@@ -353,7 +353,6 @@
             return null;
         };
 
-        // 倒计时组件 - 现代 60 秒跑马灯版 (深色质感风格)
         // 倒计时组件 - 现代 60 秒跑马灯版 (彩虹像素风格)
         const CountdownCard = ({ startDate, endDate, t }) => {
             const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'ended', progress: 100 });
@@ -363,8 +362,6 @@
                     const now = new Date();
                     const currentTime = now.getTime();
                     
-                    // Parse dates - assuming ISO strings or valid date strings
-                    // Since we are storing as ISO strings after conversion, standard parsing works
                     const start = startDate ? new Date(startDate).getTime() : null;
                     const end = endDate ? new Date(endDate).getTime() : null;
                     const currentSeconds = now.getSeconds();
@@ -453,7 +450,7 @@
                             )}
                         </div>
 
-                        {/* Rainbow Pixel Marquee (Restored) */}
+                        {/* Rainbow Pixel Marquee */}
                         {timeLeft.status !== 'ended' && (
                             <div className="mt-2 relative">
                                 <div className="flex justify-between text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">
@@ -528,7 +525,12 @@
             const [currentComp, setCurrentComp] = useState(competitions[0]);
             
             const [showCompModal, setShowCompModal] = useState(false);
-            const [dataList, setDataList] = useState([]);
+            const [dataList, setDataList] = useState(() => {
+                // Initial load: Try local storage, fallback to default
+                const savedData = localStorage.getItem(`night_data_${defaultCompetitions[0].id}`);
+                return savedData ? JSON.parse(savedData) : initialDataMap[defaultCompetitions[0].id];
+            });
+
             const [isAnalyzing, setIsAnalyzing] = useState(false);
             const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
             const [showManualModal, setShowManualModal] = useState(false);
@@ -611,11 +613,11 @@
                 setManualEndMinute(endData.minute);
             }, [currentComp]);
 
-            useEffect(() => {
-                if (dataList.length > 0 || initialDataMap[currentComp.id]) {
-                   localStorage.setItem(`night_data_${currentComp.id}`, JSON.stringify(dataList));
-                }
-            }, [dataList, currentComp.id]);
+            // Save DataList - MANUAL save logic used by handlers, not useEffect
+            const persistData = (newData) => {
+                setDataList(newData);
+                localStorage.setItem(`night_data_${currentComp.id}`, JSON.stringify(newData));
+            };
 
             useEffect(() => {
                 let isMounted = true;
@@ -883,7 +885,7 @@
                                 }
                             }
 
-                            setDataList(prev => [...prev, { 
+                            const newData = [...dataList, { 
                                 id: Date.now(), 
                                 volume: parsedData.volume, 
                                 userVolume: parsedData.userVolume || 0,
@@ -891,7 +893,8 @@
                                 eligibility: parsedData.eligibility || (stats.latestEligibility || 0),
                                 timestamp: timestamp, 
                                 source: 'ai' 
-                            }]);
+                            }];
+                            persistData(newData);
                         }
                     } else {
                         throw new Error(t.errorValid);
@@ -1284,7 +1287,8 @@
                                                         <button 
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                setDataList(prev => prev.filter(d => d.id !== item.id));
+                                                                const newData = dataList.filter(d => d.id !== item.id);
+                                                                persistData(newData);
                                                             }} 
                                                             className="text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400 transition-colors opacity-0 group-hover/item:opacity-100"
                                                             title={t.delete}
@@ -1551,80 +1555,72 @@
 
                     {showManualModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/80 backdrop-blur-md animate-in fade-in">
-                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-6 animate-in zoom-in-95 relative overflow-hidden">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                                <div className="flex justify-between items-center mb-6 relative z-10">
+                                <div className="flex justify-between items-center mb-8 relative z-10">
                                     <h3 className="font-bold text-xl text-slate-800 dark:text-white">{t.manualModalTitle}</h3>
                                     <button onClick={() => setShowManualModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-all"><Icon name="x" size={20} /></button>
                                 </div>
-                                <div className="space-y-4 relative z-10">
-                                    <div className="space-y-1">
+                                <div className="space-y-5 relative z-10">
+                                    <div className="space-y-1.5">
                                         <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.dateLabel}</label>
-                                        <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600 text-sm" />
+                                        <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
                                     </div>
-                                    
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.volumeLabel}</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-xs">$</span>
-                                                <input type="number" placeholder="Threshold" value={manualVolume} onChange={e => setManualVolume(e.target.value)} className="w-full pl-6 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.userVolumeLabel}</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold text-xs">$</span>
-                                                <input type="number" placeholder="Your Vol" value={manualUserVolume} onChange={e => setManualUserVolume(e.target.value)} className="w-full pl-6 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
-                                            </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.volumeLabel}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
+                                            <input type="number" placeholder="Threshold: e.g. 85000" value={manualVolume} onChange={e => setManualVolume(e.target.value)} className="w-full pl-8 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
                                         </div>
                                     </div>
-
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.rewardLabel} ({currentComp.symbol})</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="gift" size={12}/></span>
-                                                <input type="number" placeholder="Reward" value={manualReward} onChange={e => setManualReward(e.target.value)} className="w-full pl-8 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
-                                            </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.userVolumeLabel}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
+                                            <input type="number" placeholder="Your Vol: e.g. 90000" value={manualUserVolume} onChange={e => setManualUserVolume(e.target.value)} className="w-full pl-8 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
                                         </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.eligibilityLabel}</label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="list-ordered" size={12}/></span>
-                                                <input type="number" placeholder="Rank" value={manualEligibility} onChange={e => setManualEligibility(e.target.value)} className="w-full pl-8 pr-3 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-mono font-bold text-sm text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
-                                            </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.rewardLabel} ({currentComp.symbol})</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="gift" size={14}/></span>
+                                            <input type="number" placeholder="e.g. 1200" value={manualReward} onChange={e => setManualReward(e.target.value)} className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.eligibilityLabel}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="list-ordered" size={14}/></span>
+                                            <input type="number" placeholder="e.g. 2000" value={manualEligibility} onChange={e => setManualEligibility(e.target.value)} className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
                                         </div>
                                     </div>
                                     
-                                    <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+                                    <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                                         <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 block">{t.periodLabel}</label>
                                         <div className="grid grid-cols-2 gap-3">
-                                            {/* Start Date & Time */}
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-400 mb-1 block">{t.startLabel}</label>
                                                 <div className="flex flex-col gap-1.5">
-                                                    <input type="date" value={manualStartDate} onChange={e => setManualStartDate(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200" />
+                                                    <input type="date" value={manualStartDate} onChange={e => setManualStartDate(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200" />
                                                     <div className="flex gap-1">
-                                                        <select value={manualStartHour} onChange={e => setManualStartHour(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                        <select value={manualStartHour} onChange={e => setManualStartHour(e.target.value)} className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
                                                             {hours.map(h => <option key={h} value={h}>{h}</option>)}
                                                         </select>
-                                                        <select value={manualStartMinute} onChange={e => setManualStartMinute(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                        <select value={manualStartMinute} onChange={e => setManualStartMinute(e.target.value)} className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
                                                             {minutes.map(m => <option key={m} value={m}>{m}</option>)}
                                                         </select>
                                                     </div>
                                                 </div>
                                             </div>
-                                            {/* End Date & Time */}
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-400 mb-1 block">{t.endLabel}</label>
                                                 <div className="flex flex-col gap-1.5">
-                                                    <input type="date" value={manualEndDate} onChange={e => setManualEndDate(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200" />
+                                                    <input type="date" value={manualEndDate} onChange={e => setManualEndDate(e.target.value)} className="w-full p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200" />
                                                     <div className="flex gap-1">
-                                                        <select value={manualEndHour} onChange={e => setManualEndHour(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                        <select value={manualEndHour} onChange={e => setManualEndHour(e.target.value)} className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
                                                             {hours.map(h => <option key={h} value={h}>{h}</option>)}
                                                         </select>
-                                                        <select value={manualEndMinute} onChange={e => setManualEndMinute(e.target.value)} className="w-1/2 p-1.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
+                                                        <select value={manualEndMinute} onChange={e => setManualEndMinute(e.target.value)} className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center">
                                                             {minutes.map(m => <option key={m} value={m}>{m}</option>)}
                                                         </select>
                                                     </div>
@@ -1646,14 +1642,14 @@
                                                 timestamp: new Date(manualDate).toISOString(), 
                                                 source: 'manual' 
                                             }];
-                                            setDataList(newData);
+                                            persistData(newData);
                                         }
                                         setShowManualModal(false);
                                         setManualVolume('');
                                         setManualUserVolume('');
                                         setManualReward('');
                                         setManualEligibility('');
-                                    }} className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 dark:shadow-[0_0_20px_-5px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:shadow-xl dark:hover:shadow-[0_0_30px_-5px_rgba(37,99,235,0.7)] transition-all active:scale-[0.98] mt-2 border border-blue-400/20">
+                                    }} className="w-full py-5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 dark:shadow-[0_0_20px_-5px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:shadow-xl dark:hover:shadow-[0_0_30px_-5px_rgba(37,99,235,0.7)] transition-all active:scale-[0.98] mt-4 border border-blue-400/20">
                                         {t.confirmButton}
                                     </button>
                                 </div>
