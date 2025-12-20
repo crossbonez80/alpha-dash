@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alpha 交易赛分析终端</title>
+    
+    <!-- PWA 配置 -->
+    <meta name="application-name" content="AlphaDash">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AlphaDash">
+    <meta name="theme-color" content="#020617">
+
+    <!-- 动态生成的 App 图标 (SVG Data URI) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'/%3E%3Cpath d='M19 3v4'/%3E%3Cpath d='M21 5h-4'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f172a' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='24' height='24' fill='white'/%3E%3Cpath d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'/%3E%3Cpath d='M19 3v4'/%3E%3Cpath d='M21 5h-4'/%3E%3C/svg%3E">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#020617',
+                            card: '#0f172a',
+                            border: 'rgba(255, 255, 255, 0.08)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+        /* 引入圆润字体 Nunito */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
+        
+        /* 定义圆润字体类 */
+        .font-rounded { font-family: 'Nunito', sans-serif; }
+        
+        /* 自定义滚动条 - 适配明暗模式 */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* 动画类增强 */
+        .animate-in { animation-duration: 0.3s; animation-fill-mode: both; }
+        .fade-in { animation-name: fadeIn; }
+        .zoom-in-95 { animation-name: zoomIn95; }
+        .slide-in-from-top-2 { animation-name: slideInFromTop2; }
+        .slide-in-from-bottom-4 { animation-name: slideInFromBottom4; }
+
+        /* 玻璃拟态光效 */
+        .glass-panel {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        /* 输入框自动填充背景修复 */
+        .dark input:-webkit-autofill,
+        .dark input:-webkit-autofill:hover, 
+        .dark input:-webkit-autofill:focus, 
+        .dark input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+            -webkit-text-fill-color: white !important;
+        }
+        
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #f8fafc inset !important;
+            -webkit-text-fill-color: #0f172a !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-200 selection:bg-blue-500/30 transition-colors duration-300">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // 引入 Recharts 组件
+        const { AreaChart, Area, ComposedChart, Bar, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } = window.Recharts;
+        const { useState, useMemo, useEffect, useRef } = React;
+
+        // --- 核心组件定义 ---
+
+        // 图标组件
+        const Icon = ({ name, size = 16, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (window.lucide && iconRef.current) {
+                    iconRef.current.innerHTML = '';
+                    const iconElement = document.createElement('i');
+                    iconElement.setAttribute('data-lucide', name);
+                    if (className) iconElement.className = className;
+                    iconElement.style.width = `${size}px`;
+                    iconElement.style.height = `${size}px`;
+                    iconElement.style.display = 'inline-block';
+                    iconRef.current.appendChild(iconElement);
+                    window.lucide.createIcons({
+                        attrs: { strokeWidth: 2, width: size, height: size },
+                        nameAttr: 'data-lucide',
+                        icons: window.lucide.icons
+                    });
+                }
+            }, [name, size, className]);
+            return <span ref={iconRef} className={`inline-flex items-center justify-center ${className}`} style={{ width: size, height: size }}></span>;
+        };
+
+        // 默认比赛配置
+        const defaultCompetitions = [
+            { id: 'night', name: 'Midnight', symbol: 'NIGHT', coingeckoId: 'midnight-3', color: 'indigo', icon: 'moon', gradient: 'from-indigo-500 to-purple-600' },
+            { id: 'btc', name: 'Bitcoin', symbol: 'BTC', coingeckoId: 'bitcoin', color: 'orange', icon: 'bitcoin', gradient: 'from-orange-500 to-amber-500' },
+            { id: 'eth', name: 'Ethereum', symbol: 'ETH', coingeckoId: 'ethereum', color: 'blue', icon: 'zap', gradient: 'from-blue-500 to-cyan-500' },
+            { id: 'sol', name: 'Solana', symbol: 'SOL', coingeckoId: 'solana', color: 'emerald', icon: 'layers', gradient: 'from-emerald-400 to-teal-500' }
+        ];
+
+        // 颜色选项配置
+        const colorOptions = [
+            { id: 'indigo', label: 'Indigo', gradient: 'from-indigo-500 to-purple-600', icon: 'moon' },
+            { id: 'orange', label: 'Orange', gradient: 'from-orange-500 to-amber-500', icon: 'bitcoin' },
+            { id: 'blue', label: 'Blue', gradient: 'from-blue-500 to-cyan-500', icon: 'zap' },
+            { id: 'emerald', label: 'Emerald', gradient: 'from-emerald-400 to-teal-500', icon: 'layers' },
+            { id: 'rose', label: 'Rose', gradient: 'from-rose-500 to-pink-600', icon: 'flame' },
+            { id: 'violet', label: 'Violet', gradient: 'from-violet-500 to-fuchsia-600', icon: 'gem' },
+        ];
+
+        // 默认初始数据
+        const initialDataMap = {
+            night: [
+                { id: 'init-1', volume: 36129.54, userVolume: 42000.00, timestamp: new Date(Date.now() - 172800000).toISOString(), source: 'default', reward: 1200, eligibility: 2000 },
+                { id: 'init-2', volume: 60689.17, userVolume: 58000.00, timestamp: new Date(Date.now() - 86400000).toISOString(), source: 'default', reward: 1200, eligibility: 2000 },
+            ],
+        };
+
+        // 翻译配置
+        const translations = {
+            zh: {
+                subtitle: "数据驱动的交易赛入榜门槛预测系统",
+                manualEntry: "手动补录",
+                importScreenshot: "截图识别",
+                analyzing: "AI 识别中...",
+                currentThreshold: "当前入榜门槛",
+                liveUpdate: "实时更新",
+                growthRate: "24H 变动",
+                vsYesterday: "较昨日同期",
+                predictedNext: "明日预测目标",
+                linearTrend: "基于线性趋势",
+                rewardEst: "单号奖励估值 (USD)",
+                rewardNote: "(按实时币价)",
+                historySnapshot: "历史快照",
+                growthCurve: "门槛 vs 个人交易量趋势",
+                aiAnalysis: "AI 深度策略预测",
+                aiAnalyzing: "AI 分析中...",
+                manualModalTitle: "手动录入",
+                dateLabel: "日期",
+                volumeLabel: "入榜门槛交易量 (USD)",
+                userVolumeLabel: "您的交易量 (USD) - 可选",
+                rewardLabel: "奖励数量 - 可选",
+                eligibilityLabel: "合格名次 (如 2000)",
+                confirmButton: "确认录入",
+                aiPhase: "阶段",
+                aiRisk: "风险评级",
+                geminiInsight: "Gemini 赛项深度洞察",
+                day: "Day",
+                priceLive: "LIVE",
+                priceEst: "EST",
+                sourceAI: "AI",
+                sourceMan: "人工",
+                delete: "删除",
+                edit: "编辑",
+                errorTrend: "需要至少两条历史数据进行趋势预测",
+                errorRecognize: "AI 未能识别内容",
+                errorValid: "识别结果不是有效数字",
+                promptStrategy: "你是一个专业的交易比赛分析师。请用中文回答。分析当前市场竞争阶段（如：早期积累、中期拉升、冲刺阶段）和风险等级（低、中、高）。并给出针对性的冲榜策略建议（简短有力，100字以内）。根据以下历史入榜门槛数据序列：",
+                switchCompetition: "切换交易赛",
+                selectCompetition: "选择要分析的币种赛道",
+                addCompetition: "添加新赛道",
+                editCompetition: "编辑赛道",
+                compName: "币种名称 (如 Bitcoin)",
+                compSymbol: "代币符号 (如 BTC)",
+                compCgId: "CoinGecko ID (用于价格)",
+                compColor: "主题颜色",
+                save: "保存配置",
+                cancel: "取消",
+                deleteConfirmTitle: "确认删除",
+                deleteConfirmDesc: "确定要删除这个赛道吗？所有相关的历史数据都将永久丢失且无法恢复。",
+                confirmDelete: "确认删除",
+                cgIdHint: "在 coingecko.com 网址中找到，例如 'bitcoin'",
+                gap: "差距",
+                statusSafe: "安全",
+                statusRisk: "危险",
+                legendThreshold: "入榜门槛",
+                legendUser: "您的交易量",
+                statusTitle: "当前状态",
+                lead: "领先门槛",
+                lag: "落后门槛",
+                themeLight: "亮色",
+                themeDark: "暗色",
+                settings: "设置",
+                apiKeyLabel: "Gemini API Key",
+                apiKeyPlaceholder: "在此粘贴您的 API Key",
+                saveKey: "保存 Key",
+                clearKey: "清除",
+                apiKeyHint: "API Key 仅保存在本地浏览器中，用于调用 Gemini AI 功能。",
+                errorApiKey: "未检测到 API Key。请在设置中输入您的 Gemini API Key 以使用 AI 功能。",
+                safeGap: "安全差距",
+                gapLead: "当前领先",
+                gapLag: "当前落后",
+                cardEligibility: "合格名次",
+                rewardSource: "来自截图识别",
+                dataCutoff: "更新于",
+            },
+            en: {
+                subtitle: "Data-driven Competition Threshold Prediction System",
+                manualEntry: "Entry",
+                importScreenshot: "Scan",
+                analyzing: "Scanning...",
+                currentThreshold: "Current Threshold",
+                liveUpdate: "Live Update",
+                growthRate: "24H Change",
+                vsYesterday: "vs Yesterday",
+                predictedNext: "Next Day Target",
+                linearTrend: "Linear Trend Based",
+                rewardEst: "Est. Reward Value (USD)",
+                rewardNote: "(Live Price)",
+                historySnapshot: "History Snapshots",
+                growthCurve: "Threshold vs User Volume",
+                aiAnalysis: "AI Strategy Insight",
+                aiAnalyzing: "Analyzing...",
+                manualModalTitle: "Manual Entry",
+                dateLabel: "Date",
+                volumeLabel: "Threshold Volume (USD)",
+                userVolumeLabel: "Your Volume (USD) - Optional",
+                rewardLabel: "Reward Amount - Optional",
+                eligibilityLabel: "Eligibility Rank (e.g. 2000)",
+                confirmButton: "Confirm Entry",
+                aiPhase: "Phase",
+                aiRisk: "Risk Level",
+                geminiInsight: "Gemini Competition Insight",
+                day: "Day",
+                priceLive: "LIVE",
+                priceEst: "EST",
+                sourceAI: "AI",
+                sourceMan: "MANUAL",
+                delete: "Delete",
+                edit: "Edit",
+                errorTrend: "Need at least 2 data points for prediction",
+                errorRecognize: "AI failed to recognize content",
+                errorValid: "Result is not a valid number",
+                promptStrategy: "You are a professional trading competition analyst. Please respond in English. Analyze current market phase (e.g. Accumulation, Surge, Final Sprint) and Risk Level (Low, Medium, High). Give specific strategy advice (short and concise, under 100 words). Based on the following historical threshold data sequence:",
+                switchCompetition: "Switch Competition",
+                selectCompetition: "Select Competition Track",
+                addCompetition: "Add New Track",
+                editCompetition: "Edit Track",
+                compName: "Coin Name (e.g. Bitcoin)",
+                compSymbol: "Token Symbol (e.g. BTC)",
+                compCgId: "CoinGecko ID (for price)",
+                compColor: "Theme Color",
+                save: "Save Configuration",
+                cancel: "Cancel",
+                deleteConfirmTitle: "Confirm Deletion",
+                deleteConfirmDesc: "Are you sure you want to delete this track? All historical data associated with it will be permanently lost.",
+                confirmDelete: "Delete Track",
+                cgIdHint: "Find in coingecko.com URL, e.g. 'bitcoin'",
+                gap: "Gap",
+                statusSafe: "Safe",
+                statusRisk: "Risk",
+                legendThreshold: "Threshold",
+                legendUser: "Your Volume",
+                statusTitle: "Current Status",
+                lead: "Leading Threshold",
+                lag: "Trailing Threshold",
+                themeLight: "Light",
+                themeDark: "Dark",
+                settings: "Settings",
+                apiKeyLabel: "Gemini API Key",
+                apiKeyPlaceholder: "Paste your API Key here",
+                saveKey: "Save Key",
+                clearKey: "Clear",
+                apiKeyHint: "API Key is stored locally in your browser and used for AI features.",
+                errorApiKey: "API Key missing. Please enter your Gemini API Key in Settings to use AI features.",
+                safeGap: "Safety Gap",
+                gapLead: "Current Lead",
+                gapLag: "Current Lag",
+                cardEligibility: "Eligibility Rank",
+                rewardSource: "From Screenshot",
+                dataCutoff: "Updated at",
+            }
+        };
+
+        // Tooltip 组件 (依赖 t 翻译配置)
+        const CustomTooltip = ({ active, payload, label, t }) => {
+            if (active && payload && payload.length) {
+                return (
+                    <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] min-w-[200px]">
+                        <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-3">{label}</p>
+                        
+                        {/* Threshold - Blue */}
+                        <div className="flex items-center justify-between gap-4 mb-2">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-md"></div>
+                                <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{t.legendThreshold}</span>
+                            </div>
+                            <span className="text-sm font-mono font-bold text-slate-900 dark:text-white">${payload[0].value.toLocaleString()}</span>
+                        </div>
+
+                        {/* User Volume - Green */}
+                        {payload[1] && (
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-md"></div>
+                                    <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{t.legendUser}</span>
+                                </div>
+                                <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                    ${payload[1].value.toLocaleString()}
+                                </span>
+                            </div>
+                        )}
+                        
+                        {payload[1] && (
+                            <div className={`mt-3 pt-2 border-t border-slate-100 dark:border-white/10 text-xs font-bold flex justify-between ${payload[1].value >= payload[0].value ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
+                                <span>{payload[1].value >= payload[0].value ? t.statusSafe : t.statusRisk}</span>
+                                <span>{payload[1].value >= payload[0].value ? '+' : ''}{((payload[1].value - payload[0].value) / payload[0].value * 100).toFixed(1)}%</span>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+            return null;
+        };
+
+        const App = () => {
+            const [lang, setLang] = useState('zh');
+            const [theme, setTheme] = useState('dark'); 
+            const t = translations[lang];
+
+            useEffect(() => {
+                const root = window.document.documentElement;
+                const metaThemeColor = document.querySelector("meta[name=theme-color]");
+                
+                if (theme === 'dark') {
+                    root.classList.add('dark');
+                    document.body.classList.add('dark');
+                    if(metaThemeColor) metaThemeColor.setAttribute("content", "#020617");
+                } else {
+                    root.classList.remove('dark');
+                    document.body.classList.remove('dark');
+                    if(metaThemeColor) metaThemeColor.setAttribute("content", "#f8fafc");
+                }
+            }, [theme]);
+
+            const [competitions, setCompetitions] = useState(() => {
+                const saved = localStorage.getItem('night_competitions');
+                return saved ? JSON.parse(saved) : defaultCompetitions;
+            });
+
+            useEffect(() => {
+                localStorage.setItem('night_competitions', JSON.stringify(competitions));
+            }, [competitions]);
+
+            const [currentComp, setCurrentComp] = useState(competitions[0]);
+            
+            const [showCompModal, setShowCompModal] = useState(false);
+            const [dataList, setDataList] = useState([]);
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
+            const [isGeneratingStrategy, setIsGeneratingStrategy] = useState(false);
+            const [showManualModal, setShowManualModal] = useState(false);
+            const [aiStrategy, setAiStrategy] = useState(null);
+            const [error, setError] = useState(null);
+            
+            const [manualVolume, setManualVolume] = useState('');
+            const [manualUserVolume, setManualUserVolume] = useState('');
+            const [manualReward, setManualReward] = useState('');
+            const [manualEligibility, setManualEligibility] = useState('');
+            const [manualDate, setManualDate] = useState(new Date().toISOString().split('T')[0]);
+
+            const [showManageModal, setShowManageModal] = useState(false);
+            const [editingComp, setEditingComp] = useState(null);
+            const [compForm, setCompForm] = useState({ name: '', symbol: '', coingeckoId: '', color: 'indigo' });
+
+            const [showDeleteModal, setShowDeleteModal] = useState(false);
+            const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+            const [showSettingsModal, setShowSettingsModal] = useState(false);
+            const apiKey = ""; 
+            const [customKey, setCustomKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
+            const [tempKey, setTempKey] = useState('');
+            
+            const finalApiKey = apiKey || customKey;
+
+            const [coinPrice, setCoinPrice] = useState(0); 
+            const [isLivePrice, setIsLivePrice] = useState(false);
+
+            useEffect(() => {
+                const savedData = localStorage.getItem(`night_data_${currentComp.id}`);
+                if (savedData) {
+                    setDataList(JSON.parse(savedData));
+                } else {
+                    setDataList(initialDataMap[currentComp.id] || []);
+                }
+                setAiStrategy(null);
+                setError(null);
+                setCoinPrice(0);
+                setIsLivePrice(false);
+            }, [currentComp.id]);
+
+            useEffect(() => {
+                if (dataList.length > 0 || initialDataMap[currentComp.id]) {
+                   localStorage.setItem(`night_data_${currentComp.id}`, JSON.stringify(dataList));
+                }
+            }, [dataList, currentComp.id]);
+
+            useEffect(() => {
+                let isMounted = true;
+                const fetchPrice = async () => {
+                    if (!currentComp.coingeckoId) return;
+                    try {
+                        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${currentComp.coingeckoId}&vs_currencies=usd`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (isMounted && data[currentComp.coingeckoId] && data[currentComp.coingeckoId].usd) {
+                                setCoinPrice(data[currentComp.coingeckoId].usd);
+                                setIsLivePrice(true);
+                            }
+                        } else {
+                            if (isMounted) setIsLivePrice(false);
+                            throw new Error("API Limit");
+                        }
+                    } catch (e) {
+                        if (isMounted) {
+                            setCoinPrice(prev => {
+                                if (prev === 0) return 0.0001;
+                                const change = prev * (Math.random() * 0.01 - 0.005);
+                                return Math.max(0.00000001, prev + change);
+                            });
+                        }
+                    }
+                };
+                fetchPrice();
+                const interval = setInterval(fetchPrice, 15000);
+                return () => { isMounted = false; clearInterval(interval); };
+            }, [currentComp.coingeckoId]);
+
+            const chartData = useMemo(() => {
+                return [...dataList]
+                    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                    .map((item, index) => ({
+                        ...item,
+                        displayDay: `${t.day} ${index + 1}`,
+                        userVolume: item.userVolume || 0
+                    }));
+            }, [dataList, t.day]);
+
+            const stats = useMemo(() => {
+                if (chartData.length < 1) return { current: 0, growthRate: 0, predictedNext: 0, maxVolume: 0, latestReward: 0, latestUserVolume: 0, gap: 0, latestTimestamp: null, latestEligibility: 0 };
+                const current = chartData[chartData.length - 1].volume;
+                const previous = chartData[chartData.length - 2]?.volume || current;
+                const growthRate = previous === 0 ? 0 : ((current - previous) / previous) * 100;
+                
+                const maxVolume = Math.max(...chartData.map(d => d.volume));
+                
+                const reversedData = [...chartData].reverse();
+                const latestRewardItem = reversedData.find(item => item.reward !== undefined && item.reward !== null && !isNaN(item.reward));
+                const latestReward = latestRewardItem ? latestRewardItem.reward : 0;
+
+                const latestEligibilityItem = reversedData.find(item => item.eligibility !== undefined && item.eligibility !== null);
+                const latestEligibility = latestEligibilityItem ? latestEligibilityItem.eligibility : 0;
+                
+                const latestUserVolume = chartData[chartData.length - 1]?.userVolume || 0;
+                const gap = latestUserVolume - current;
+                const latestTimestamp = chartData[chartData.length - 1].timestamp;
+
+                return { current, growthRate, predictedNext: current * (1 + (growthRate / 100)), maxVolume, latestReward, latestUserVolume, gap, latestTimestamp, latestEligibility };
+            }, [chartData]);
+
+            // ... helper functions ...
+            const openManageModal = (comp = null) => {
+                if (comp) {
+                    setEditingComp(comp);
+                    setCompForm({ name: comp.name, symbol: comp.symbol, coingeckoId: comp.coingeckoId, color: comp.color });
+                } else {
+                    setEditingComp(null);
+                    setCompForm({ name: '', symbol: '', coingeckoId: '', color: 'indigo' });
+                }
+                setShowManageModal(true);
+            };
+
+            const handleSaveCompetition = () => {
+                if (!compForm.name || !compForm.symbol) return;
+                const selectedColor = colorOptions.find(c => c.id === compForm.color);
+                const newComp = {
+                    id: editingComp ? editingComp.id : `custom-${Date.now()}`,
+                    ...compForm,
+                    icon: selectedColor.icon,
+                    gradient: selectedColor.gradient
+                };
+                if (editingComp) {
+                    setCompetitions(prev => prev.map(c => c.id === editingComp.id ? newComp : c));
+                    if (currentComp.id === editingComp.id) setCurrentComp(newComp);
+                } else {
+                    setCompetitions(prev => [...prev, newComp]);
+                }
+                setShowManageModal(false);
+            };
+
+            const handleDeleteRequest = (id, e) => {
+                e.stopPropagation();
+                setDeleteTargetId(id);
+                setShowDeleteModal(true);
+            };
+
+            const confirmDeleteCompetition = () => {
+                if (!deleteTargetId) return;
+                const newComps = competitions.filter(c => c.id !== deleteTargetId);
+                setCompetitions(newComps);
+                localStorage.removeItem(`night_data_${deleteTargetId}`);
+                if (currentComp.id === deleteTargetId && newComps.length > 0) {
+                    setCurrentComp(newComps[0]);
+                }
+                setShowDeleteModal(false);
+                setDeleteTargetId(null);
+            };
+
+            const saveApiKey = (key) => {
+                setCustomKey(key);
+                localStorage.setItem('gemini_api_key', key);
+            };
+
+            const openSettingsModal = () => {
+                setTempKey(customKey);
+                setShowSettingsModal(true);
+            };
+
+            const confirmSaveKey = () => {
+                setCustomKey(tempKey);
+                localStorage.setItem('gemini_api_key', tempKey);
+                setShowSettingsModal(false);
+                setError(null);
+            };
+
+            const clearKey = () => {
+                setTempKey('');
+            };
+
+            const fetchWithRetry = async (url, options, retryCount = 0) => {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        const errBody = await response.json().catch(() => ({}));
+                        throw new Error(errBody.error?.message || `HTTP ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (err) {
+                    if (err.message.includes('400') || err.message.includes('403') || err.message.includes('API key')) {
+                        throw new Error(t.errorApiKey);
+                    }
+                    if (retryCount < 5) {
+                        const delay = Math.pow(2, retryCount) * 1000;
+                        await new Promise(r => setTimeout(r, delay));
+                        return fetchWithRetry(url, options, retryCount + 1);
+                    }
+                    throw err;
+                }
+            };
+
+            const handleFileUpload = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!finalApiKey) {
+                    setError(t.errorApiKey);
+                    openSettingsModal();
+                    event.target.value = null;
+                    return;
+                }
+
+                setIsAnalyzing(true);
+                setError(null);
+
+                try {
+                    const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+
+                    const promptText = `
+                        Please analyze this trading competition leaderboard screenshot and extract:
+                        1. "volume": Minimum threshold volume (last place on list).
+                        2. "reward": Reward amount per user (optional, null if not found).
+                        3. "userVolume": My/User's personal trading volume if visible (look for 'My Volume', 'Personal', 'Your Volume'). Return null if not found.
+                        4. "dataCutoff": The "Data cutoff time" or "Last Updated" timestamp visible in the image. Please format it as a standard ISO string or complete date string.
+                        5. "eligibility": The rank limit or number of winners (e.g. "Top 2000", "1-500"). Return the maximum rank number (e.g. 2000).
+                        
+                        Strictly return JSON string: { "volume": 123.45, "reward": 100, "userVolume": 200.5, "dataCutoff": "2023-10-25T14:30:00", "eligibility": 2000 }
+                    `;
+
+                    const result = await fetchWithRetry(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [
+                                        { text: promptText },
+                                        { inlineData: { mimeType: file.type, data: base64 } }
+                                    ]
+                                }]
+                            })
+                        }
+                    );
+
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!text) throw new Error(t.errorRecognize);
+
+                    const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                    let parsedData;
+                    try {
+                        parsedData = JSON.parse(jsonStr);
+                    } catch (e) {
+                         const val = parseFloat(text.trim().replace(/[^0-9.]/g, ''));
+                         parsedData = { volume: val, reward: null, userVolume: null };
+                    }
+
+                    if (parsedData && !isNaN(parsedData.volume) && parsedData.volume > 0) {
+                        let timestamp = new Date().toISOString();
+                        if (parsedData.dataCutoff) {
+                            const parsedTime = new Date(parsedData.dataCutoff);
+                            if (!isNaN(parsedTime.getTime())) {
+                                timestamp = parsedTime.toISOString();
+                            }
+                        }
+
+                        setDataList(prev => [...prev, { 
+                            id: Date.now(), 
+                            volume: parsedData.volume, 
+                            userVolume: parsedData.userVolume || 0,
+                            reward: parsedData.reward || (stats.latestReward || 0), 
+                            eligibility: parsedData.eligibility || (stats.latestEligibility || 0),
+                            timestamp: timestamp, 
+                            source: 'ai' 
+                        }]);
+                    } else {
+                        throw new Error(t.errorValid);
+                    }
+                } catch (e) {
+                    setError(e.message);
+                } finally {
+                    setIsAnalyzing(false);
+                    event.target.value = null;
+                }
+            };
+
+            const generateAIStrategy = async () => {
+                if (chartData.length < 2) {
+                    setError(t.errorTrend);
+                    return;
+                }
+                
+                if (!finalApiKey) {
+                    setError(t.errorApiKey);
+                    openSettingsModal();
+                    return;
+                }
+
+                setIsGeneratingStrategy(true);
+                setError(null);
+                try {
+                    const dataStr = chartData.map(d => `${d.displayDay}: Threshold $${d.volume}, My Volume $${d.userVolume}`).join(', ');
+                    const prompt = `${t.promptStrategy} ${dataStr}。
+                        Coin: ${currentComp.name} (${currentComp.symbol}).
+                        Analyze current market phase and my safety margin (User Volume vs Threshold).
+                        Give specific strategy advice (short and concise, under 100 words).
+                    `;
+
+                    const result = await fetchWithRetry(
+                        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${finalApiKey}`,
+                        {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: prompt }] }],
+                                generationConfig: { 
+                                    responseMimeType: "application/json",
+                                    responseSchema: {
+                                        type: "object",
+                                        properties: {
+                                            riskLevel: { type: "string" },
+                                            marketPhase: { type: "string" },
+                                            strategy: { type: "string" }
+                                        },
+                                        required: ["riskLevel", "marketPhase", "strategy"]
+                                    }
+                                }
+                            })
+                        }
+                    );
+                    const strategyText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (strategyText) {
+                        setAiStrategy(JSON.parse(strategyText));
+                    }
+                } catch (e) {
+                    setError(e.message);
+                } finally {
+                    setIsGeneratingStrategy(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-[#020617] dark:to-[#020617] transition-all duration-300">
+                    <div className="max-w-6xl mx-auto">
+                        <header className="flex flex-col md:flex-row justify-between mb-8 gap-6 items-start md:items-center">
+                            <div>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <button onClick={() => setShowCompModal(true)} className="text-3xl font-black flex items-center gap-3 text-slate-800 dark:text-white tracking-tight hover:opacity-80 transition-opacity group" title={t.switchCompetition}>
+                                        <div className="relative">
+                                            <div className={`w-3 h-3 rounded-full animate-pulse relative z-10 bg-${currentComp.color}-500`} />
+                                            <div className={`absolute inset-0 rounded-full blur-sm opacity-50 animate-pulse bg-${currentComp.color}-500`} />
+                                        </div>
+                                        {currentComp.symbol} <span className="text-slate-400 font-light group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors">DASHBOARD</span>
+                                        <Icon name="chevron-down" size={24} className="text-slate-400 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400 transition-colors" />
+                                    </button>
+                                    
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-xl border border-indigo-200 dark:border-indigo-500/30 backdrop-blur-md shadow-lg animate-in fade-in slide-in-from-top-2 group hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all cursor-pointer">
+                                        <div className={`relative w-6 h-6 rounded-full bg-gradient-to-br ${currentComp.gradient} flex items-center justify-center text-white shadow-inner`}>
+                                            <Icon name={currentComp.icon} size={12} fill="white" className="text-white" />
+                                            {isLivePrice && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white dark:border-[#020617] animate-pulse"></span>}
+                                        </div>
+                                        <div className="flex flex-col leading-none">
+                                            <span className="text-[10px] text-indigo-500 dark:text-indigo-300 font-bold uppercase tracking-wider group-hover:text-indigo-600 dark:group-hover:text-indigo-200 transition-colors flex items-center gap-1">
+                                                {currentComp.symbol}/USDT
+                                                <span className={`text-[8px] px-1 rounded ${isLivePrice ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-slate-200 text-slate-500 dark:bg-slate-500/20 dark:text-slate-400'}`}>
+                                                    {isLivePrice ? t.priceLive : t.priceEst}
+                                                </span>
+                                            </span>
+                                            <span className="text-sm font-mono font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-1">
+                                                ${coinPrice > 1 ? coinPrice.toLocaleString(undefined, {maximumFractionDigits: 2}) : coinPrice.toFixed(6)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 w-full md:w-auto justify-end">
+                                {/* 语言、主题和设置切换卡片 */}
+                                <div className="flex bg-white dark:bg-slate-800/50 rounded-xl p-1 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm">
+                                    <button onClick={() => setLang('en')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${lang === 'en' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}>EN</button>
+                                    <button onClick={() => setLang('zh')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${lang === 'zh' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}>CN</button>
+                                    
+                                    <div className="w-[1px] bg-slate-200 dark:bg-slate-700 mx-1 my-1"></div>
+                                    
+                                    <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-amber-500 dark:hover:text-yellow-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all flex items-center justify-center">
+                                        <Icon name={theme === 'dark' ? 'moon' : 'sun'} size={16} className={theme === 'dark' ? 'text-indigo-400' : 'text-amber-500'} />
+                                    </button>
+
+                                    <div className="w-[1px] bg-slate-200 dark:bg-slate-700 mx-1 my-1"></div>
+
+                                    <button onClick={openSettingsModal} className="px-3 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all flex items-center justify-center">
+                                        <Icon name="settings" size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        </header>
+
+                        {error && (
+                            <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 rounded-2xl flex justify-between items-center animate-in fade-in slide-in-from-top-2 shadow-sm dark:shadow-[0_0_30px_-10px_rgba(244,63,94,0.2)]">
+                                <div className="flex items-center gap-3 text-sm font-bold"><Icon name="alert-triangle" /> {error}</div>
+                                <button onClick={() => setError(null)} className="p-1 hover:bg-rose-100 dark:hover:bg-rose-500/20 rounded-lg transition-colors"><Icon name="x" size={18} /></button>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                            {/* Card 1: Reward */}
+                            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-amber-200 dark:border-amber-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-amber-900/30 hover:border-amber-300 dark:hover:border-amber-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
+                                <div className="absolute inset-0 bg-gradient-to-br from-amber-100/50 dark:from-amber-900/20 to-transparent opacity-50"></div>
+                                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12">
+                                    <Icon name="gift" size={120} className="text-amber-600 dark:text-amber-500" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"><Icon name="coins" size={18} /></div>
+                                        <div className="text-amber-900/70 dark:text-amber-200/70 text-xs font-bold uppercase tracking-widest">{t.rewardEst}</div>
+                                    </div>
+                                    <div className="flex items-baseline gap-0.5 text-amber-950 dark:text-white">
+                                        <span className="text-xl font-bold text-amber-600/70 dark:text-amber-400/70">$</span>
+                                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
+                                            {stats.latestReward ? (stats.latestReward * coinPrice).toLocaleString(undefined, {maximumFractionDigits: 2}) : '0.00'}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 text-xs font-medium text-amber-700/80 dark:text-amber-400/80 flex items-center gap-1">
+                                        ≈ {stats.latestReward ? stats.latestReward.toLocaleString() : '-'} {currentComp.symbol} {t.rewardNote}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card 2: Prediction */}
+                            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-violet-200 dark:border-violet-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 hover:border-violet-300 dark:hover:border-violet-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
+                                <div className="absolute inset-0 bg-gradient-to-br from-violet-100/50 dark:from-violet-900/20 to-transparent opacity-50"></div>
+                                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12">
+                                    <Icon name="sparkles" size={120} className="text-violet-600 dark:text-violet-500" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"><Icon name="bot" size={18} /></div>
+                                        <div className="text-violet-900/70 dark:text-violet-200/70 text-xs font-bold uppercase tracking-widest">{t.predictedNext}</div>
+                                    </div>
+                                    <div className="flex items-baseline gap-0.5 text-violet-950 dark:text-white">
+                                        <span className="text-xl font-bold text-violet-600/70 dark:text-violet-400/70">$</span>
+                                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">{stats.predictedNext.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
+                                    </div>
+                                    <div className="mt-2 text-xs font-medium text-violet-700/80 dark:text-violet-400/80">
+                                        {t.linearTrend}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card 3: Threshold */}
+                            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-blue-200 dark:border-blue-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 hover:border-blue-300 dark:hover:border-blue-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
+                                <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 dark:from-blue-900/20 to-transparent opacity-50"></div>
+                                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12">
+                                    <Icon name="target" size={120} className="text-blue-600 dark:text-blue-500" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"><Icon name="crosshair" size={18} /></div>
+                                        <div className="text-blue-900/70 dark:text-blue-200/70 text-xs font-bold uppercase tracking-widest">{t.currentThreshold}</div>
+                                    </div>
+                                    <div className="flex items-baseline gap-0.5 text-blue-950 dark:text-white">
+                                        <span className="text-xl font-bold text-blue-600/70 dark:text-blue-400/70">$</span>
+                                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">{stats.current.toLocaleString()}</span>
+                                    </div>
+                                    <div className="mt-2 flex items-center justify-between">
+                                        <div className="text-xs font-medium text-blue-700/80 dark:text-blue-400/80 flex items-center gap-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse"></div> {t.liveUpdate}
+                                        </div>
+                                        <div className="text-[10px] font-bold text-blue-600/70 dark:text-blue-300/70 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-md border border-blue-100 dark:border-blue-500/20">
+                                            <Icon name="user" size={10} />
+                                            ${stats.latestUserVolume.toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card 4: Eligibility (Replaces Reward Quantity) */}
+                            <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-cyan-200 dark:border-cyan-500/30 shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
+                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-100/50 dark:from-cyan-900/20 to-transparent opacity-50"></div>
+                                <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 text-cyan-600 dark:text-cyan-500">
+                                    <Icon name="users" size={120} />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-cyan-100 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/20">
+                                            <Icon name="list-ordered" size={18} />
+                                        </div>
+                                        <div className="text-cyan-900/70 dark:text-cyan-200/70 text-xs font-bold uppercase tracking-widest">{t.cardEligibility}</div>
+                                    </div>
+                                    <div className="flex items-baseline gap-1 text-cyan-950 dark:text-white">
+                                        <span className="text-xl font-bold opacity-70">Top</span>
+                                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
+                                            {stats.latestEligibility ? stats.latestEligibility.toLocaleString() : '-'}
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 text-xs font-medium text-cyan-700/80 dark:text-cyan-400/80">
+                                        {stats.latestTimestamp ? (
+                                            <span className="flex items-center gap-1">
+                                                <Icon name="clock" size={10} />
+                                                {t.dataCutoff} {new Date(stats.latestTimestamp).toLocaleString(undefined, {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'})}
+                                            </span>
+                                        ) : t.rewardSource}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Card 5: Growth Rate */}
+                            <div className={`relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02] ${stats.growthRate >= 0 ? 'border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-900/30' : 'border-rose-200 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 dark:hover:shadow-rose-900/30'}`}>
+                                <div className={`absolute inset-0 bg-gradient-to-br ${stats.growthRate >= 0 ? 'from-emerald-100/50 dark:from-emerald-900/20' : 'from-rose-100/50 dark:from-rose-900/20'} to-transparent opacity-50`}></div>
+                                <div className={`absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 ${stats.growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
+                                    <Icon name={stats.growthRate >= 0 ? "trending-up" : "trending-down"} size={120} />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${stats.growthRate >= 0 ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'}`}>
+                                            <Icon name="percent" size={18} />
+                                        </div>
+                                        <div className={`${stats.growthRate >= 0 ? 'text-emerald-900/70 dark:text-emerald-200/70' : 'text-rose-900/70 dark:text-rose-200/70'} text-xs font-bold uppercase tracking-widest`}>{t.growthRate}</div>
+                                    </div>
+                                    <div className={`flex items-baseline gap-1 ${stats.growthRate >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'}`}>
+                                        <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg">
+                                            {stats.growthRate >= 0 ? '+' : ''}{stats.growthRate.toFixed(1)}
+                                        </span>
+                                        <span className="text-xl font-bold opacity-80">%</span>
+                                    </div>
+                                    <div className={`mt-2 text-xs font-medium ${stats.growthRate >= 0 ? 'text-emerald-700/80 dark:text-emerald-400/80' : 'text-rose-700/80 dark:text-rose-400/80'}`}>
+                                        {t.vsYesterday}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div className="lg:col-span-1 flex flex-col gap-6">
+                                {/* Status Card */}
+                                <div className={`glass-panel p-6 rounded-3xl border relative overflow-hidden transition-all duration-300 bg-white dark:bg-slate-900/60 backdrop-blur-md group hover:-translate-y-1 hover:scale-[1.02] shadow-sm hover:shadow-xl dark:shadow-lg ${
+                                    stats.latestUserVolume >= stats.current 
+                                    ? 'border-emerald-100 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-900/30' 
+                                    : 'border-rose-100 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 dark:hover:shadow-rose-900/30'
+                                }`}>
+                                    <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full blur-3xl opacity-10 dark:opacity-20 ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                                    
+                                    {/* Watermark Icon */}
+                                    <div className={`absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12 pointer-events-none ${stats.latestUserVolume >= stats.current ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                        <Icon name={stats.latestUserVolume >= stats.current ? "shield-check" : "alert-octagon"} size={120} />
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-3 mb-4 relative z-10">
+                                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-colors duration-300 ${
+                                            stats.latestUserVolume >= stats.current 
+                                            ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' 
+                                            : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'
+                                        }`}>
+                                            <Icon name={stats.latestUserVolume >= stats.current ? "shield-check" : "alert-octagon"} size={18} />
+                                        </div>
+                                        <div className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">{t.statusTitle}</div>
+                                    </div>
+
+                                    <div className="flex justify-between items-end mb-4 relative z-10">
+                                        <div>
+                                            <div className={`text-4xl font-black tracking-tight flex items-baseline gap-1 ${stats.latestUserVolume >= stats.current ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                                <span>{stats.latestUserVolume >= stats.current ? '+' : ''}</span>
+                                                {stats.current > 0 ? ((stats.latestUserVolume - stats.current) / stats.current * 100).toFixed(2) : 0}
+                                                <span className="text-xl">%</span>
+                                            </div>
+                                            <div className={`text-xs font-bold mt-1 ${stats.latestUserVolume >= stats.current ? 'text-emerald-600/80 dark:text-emerald-500/80' : 'text-rose-600/80 dark:text-rose-500/80'}`}>
+                                                {stats.latestUserVolume >= stats.current ? t.lead : t.lag}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                             <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-1 uppercase">{t.legendUser}</div>
+                                             <div className="text-lg font-rounded font-bold text-slate-800 dark:text-white">${stats.latestUserVolume.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Progress Bar Visual */}
+                                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex relative z-10">
+                                        <div className={`h-full rounded-full transition-all duration-1000 ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500 w-full' : 'bg-rose-500 w-full animate-pulse'}`}></div>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons Grid - Moved & Compacted */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button 
+                                        onClick={() => setShowManualModal(true)} 
+                                        className="relative group overflow-hidden px-4 py-3 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-3"
+                                    >
+                                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                            <Icon name="plus" size={20} />
+                                        </div>
+                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {t.manualEntry}
+                                        </span>
+                                    </button>
+
+                                    <label className={`relative group overflow-hidden px-4 py-3 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 hover:border-indigo-500/50 dark:hover:border-indigo-400/50 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:scale-95 flex items-center justify-center gap-3 cursor-pointer ${isAnalyzing ? 'opacity-80' : ''}`}>
+                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                        <div className="w-9 h-9 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform duration-300 shrink-0">
+                                             <Icon name={isAnalyzing ? "loader-2" : "image"} size={20} className={isAnalyzing ? "animate-spin" : ""} />
+                                        </div>
+                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                             {isAnalyzing ? t.analyzing : t.importScreenshot}
+                                        </span>
+                                        <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*" disabled={isAnalyzing} />
+                                    </label>
+                                </div>
+
+                                {/* History Snapshot List (Upgraded to match Core Cards) */}
+                                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.01] flex flex-col max-h-[500px]">
+                                    {/* Gradient Background */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
+                                    
+                                    {/* Background Icon */}
+                                    <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 pointer-events-none">
+                                        <Icon name="history" size={120} className="text-indigo-600 dark:text-indigo-500" />
+                                    </div>
+
+                                    {/* Header */}
+                                    <div className="relative z-10 p-5 border-b border-indigo-100 dark:border-indigo-500/20 bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm font-bold flex justify-between items-center text-sm text-indigo-900 dark:text-indigo-200">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20">
+                                                <Icon name="list" size={18} />
+                                            </div>
+                                            <div className="text-indigo-900/70 dark:text-indigo-200/70 text-xs font-bold uppercase tracking-widest">{t.historySnapshot}</div>
+                                        </div>
+                                        <span className="bg-white/80 dark:bg-indigo-900/40 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-500/30 text-xs text-indigo-600 dark:text-indigo-300 font-mono font-bold">
+                                            {dataList.length}
+                                        </span>
+                                    </div>
+
+                                    {/* List Content */}
+                                    <div className="relative z-10 flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+                                        {chartData.slice().reverse().map(item => {
+                                            const gap = item.userVolume - item.volume;
+                                            const isSafe = gap >= 0;
+                                            return (
+                                                <div key={item.id} className={`group/item relative p-3 bg-white/80 dark:bg-slate-900/40 border rounded-2xl transition-all duration-300 hover:shadow-md dark:hover:shadow-lg backdrop-blur-sm ${isSafe ? 'border-slate-200 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-500/30' : 'border-slate-200 dark:border-slate-700/50 hover:border-rose-200 dark:hover:border-rose-500/30'}`}>
+                                                    
+                                                    {/* Header Row: Date & Delete */}
+                                                    <div className="flex justify-between items-center mb-3 px-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-1.5 h-1.5 rounded-full ${item.source === 'ai' ? 'bg-cyan-400 shadow-sm' : 'bg-purple-400 shadow-sm'}`} />
+                                                            <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{item.displayDay}</span>
+                                                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                                                                {new Date(item.timestamp).toLocaleDateString(undefined, {month:'numeric', day:'numeric'})}
+                                                            </span>
+                                                        </div>
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setDataList(prev => prev.filter(d => d.id !== item.id));
+                                                            }} 
+                                                            className="text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400 transition-colors opacity-0 group-hover/item:opacity-100"
+                                                            title={t.delete}
+                                                        >
+                                                            <Icon name="x" size={14} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Data Grid: Threshold vs User Volume */}
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {/* Threshold Box */}
+                                                        <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-700/50 flex flex-col justify-center">
+                                                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase mb-0.5 flex items-center gap-1">
+                                                                <Icon name="crosshair" size={10} />
+                                                                {t.legendThreshold}
+                                                            </span>
+                                                            <span className="text-sm font-rounded font-bold text-slate-700 dark:text-slate-200">
+                                                                ${item.volume.toLocaleString()}
+                                                            </span>
+                                                        </div>
+
+                                                        {/* User Volume Box (Colored) */}
+                                                        <div className={`p-2.5 rounded-xl border flex flex-col justify-center relative overflow-hidden ${
+                                                            isSafe 
+                                                            ? 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' 
+                                                            : 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20'
+                                                        }`}>
+                                                            <span className={`text-[9px] font-bold uppercase mb-0.5 flex items-center gap-1 ${isSafe ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                                                                <Icon name="user" size={10} />
+                                                                {t.legendUser}
+                                                            </span>
+                                                            <span className={`text-sm font-rounded font-bold ${isSafe ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'}`}>
+                                                                ${item.userVolume.toLocaleString()}
+                                                            </span>
+                                                            
+                                                            {/* Status Badge (Absolute) */}
+                                                            <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${isSafe ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`}></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="lg:col-span-2 space-y-6">
+                                <div className="glass-panel p-6 rounded-3xl shadow-lg dark:shadow-2xl relative overflow-hidden bg-white dark:bg-slate-900/40">
+                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 opacity-50"></div>
+                                    <div className="flex justify-between items-center mb-8 relative z-10">
+                                        <h2 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                            <Icon name="activity" className="text-blue-500 dark:text-blue-400" /> {t.growthCurve}
+                                        </h2>
+                                        <button 
+                                            onClick={generateAIStrategy} 
+                                            disabled={isGeneratingStrategy}
+                                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:shadow-lg dark:hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.6)] border border-white/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <Icon name={isGeneratingStrategy ? "loader-2" : "sparkles"} className={isGeneratingStrategy ? "animate-spin" : ""} />
+                                            {isGeneratingStrategy ? t.aiAnalyzing : t.aiAnalysis}
+                                        </button>
+                                    </div>
+                                    <div className="h-[420px] w-full relative z-10">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <AreaChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 20 }}>
+                                                <defs>
+                                                    <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                                    </linearGradient>
+                                                    <linearGradient id="colorUser" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                                    </linearGradient>
+                                                </defs>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? "#1e293b" : "#e2e8f0"} />
+                                                <XAxis 
+                                                    dataKey="displayDay" 
+                                                    axisLine={false} 
+                                                    tickLine={false} 
+                                                    tick={{fontSize:11, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:600}} 
+                                                    dy={15} 
+                                                    padding={{ left: 10, right: 10 }}
+                                                />
+                                                <YAxis 
+                                                    axisLine={false} 
+                                                    tickLine={false} 
+                                                    tick={{fontSize:11, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:600}} 
+                                                    tickFormatter={v => `$${(v/1000).toFixed(0)}k`} 
+                                                    dx={-15} 
+                                                />
+                                                <Tooltip content={<CustomTooltip t={t} />} cursor={{stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '4 4'}} />
+                                                <Area 
+                                                    type="monotone" 
+                                                    dataKey="volume" 
+                                                    stroke="#3b82f6" 
+                                                    strokeWidth={3} 
+                                                    fill="url(#colorVol)" 
+                                                    animationDuration={1500}
+                                                    activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', stroke: '#3b82f6', strokeWidth: 4 }}
+                                                />
+                                                <Area 
+                                                    type="monotone" 
+                                                    dataKey="userVolume" 
+                                                    stroke="#10b981" 
+                                                    strokeWidth={3} 
+                                                    fill="url(#colorUser)" 
+                                                    strokeDasharray="5 5"
+                                                    animationDuration={1500}
+                                                    activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', stroke: '#10b981', strokeWidth: 4 }}
+                                                />
+                                            </AreaChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+
+                                {aiStrategy && (
+                                    <div className="bg-white dark:bg-[#0f172a] border border-indigo-100 dark:border-indigo-500/30 p-8 rounded-3xl shadow-lg dark:shadow-[0_0_30px_-10px_rgba(99,102,241,0.2)] animate-in slide-in-from-bottom-4 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50 dark:bg-indigo-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+                                        <div className="flex items-center justify-between mb-6 flex-wrap gap-2 relative z-10">
+                                            <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-black uppercase tracking-tighter text-sm">
+                                                <Icon name="brain-circuit" size={20} />
+                                                {t.geminiInsight}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-full text-[10px] font-bold border border-indigo-100 dark:border-indigo-500/20 shadow-sm dark:shadow-[0_0_10px_-5px_rgba(99,102,241,0.5)]">
+                                                    {t.aiPhase}: {aiStrategy.marketPhase}
+                                                </span>
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm dark:shadow-[0_0_10px_-5px_rgba(0,0,0,0.5)] ${
+                                                    aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') ? 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-300 border-rose-100 dark:border-rose-500/20' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/20'
+                                                }`}>
+                                                    {t.aiRisk}: {aiStrategy.riskLevel}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="p-5 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl border border-indigo-100 dark:border-indigo-500/10 relative z-10">
+                                            <p className="text-sm text-indigo-800 dark:text-indigo-100 leading-relaxed font-medium">
+                                                {aiStrategy.strategy}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ... Existing Modals ... */}
+                    {showCompModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-xl animate-in fade-in">
+                            <div className="w-full max-w-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-8 animate-in zoom-in-95 relative overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
+                                <div className="flex justify-between items-center mb-8 shrink-0">
+                                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <Icon name="grid" className="text-blue-600 dark:text-blue-500" />
+                                        {t.selectCompetition}
+                                    </h3>
+                                    <button onClick={() => setShowCompModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 transition-all"><Icon name="x" size={24} /></button>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar p-1">
+                                    {competitions.map(comp => (
+                                        <div key={comp.id} className="relative group">
+                                            <button 
+                                                onClick={() => {
+                                                    setCurrentComp(comp);
+                                                    setShowCompModal(false);
+                                                }}
+                                                className={`w-full relative flex flex-col items-center justify-center p-6 rounded-2xl border transition-all duration-300 ${
+                                                    currentComp.id === comp.id 
+                                                    ? `bg-slate-50 dark:bg-slate-800 border-${comp.color}-500 ring-2 ring-${comp.color}-500/50`
+                                                    : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600'
+                                                }`}
+                                            >
+                                                <div className={`w-12 h-12 rounded-full mb-4 flex items-center justify-center bg-gradient-to-br ${comp.gradient} shadow-lg group-hover:scale-110 transition-transform`}>
+                                                    <Icon name={comp.icon} size={24} className="text-white" />
+                                                </div>
+                                                <div className="text-lg font-bold text-slate-700 dark:text-slate-200">{comp.name}</div>
+                                                <div className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 mt-1">{comp.symbol}</div>
+                                                
+                                                {currentComp.id === comp.id && (
+                                                    <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                                                )}
+                                            </button>
+                                            
+                                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                                <button onClick={(e) => { e.stopPropagation(); openManageModal(comp); }} className="p-1.5 bg-white dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-600 rounded-lg text-slate-500 dark:text-white shadow-sm border border-slate-200 dark:border-transparent" title={t.edit}><Icon name="edit-2" size={12} /></button>
+                                                {competitions.length > 1 && (
+                                                    <button onClick={(e) => handleDeleteRequest(comp.id, e)} className="p-1.5 bg-white dark:bg-slate-700 hover:bg-rose-50 dark:hover:bg-rose-600 rounded-lg text-slate-500 dark:text-white shadow-sm border border-slate-200 dark:border-transparent" title={t.delete}><Icon name="trash" size={12} /></button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button 
+                                        onClick={() => openManageModal()}
+                                        className="flex flex-col items-center justify-center p-6 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/20 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-slate-400 dark:hover:border-slate-500 transition-all text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                                    >
+                                        <div className="w-12 h-12 rounded-full mb-4 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                            <Icon name="plus" size={24} />
+                                        </div>
+                                        <div className="text-sm font-bold">{t.addCompetition}</div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showDeleteModal && (
+                        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-rose-100 dark:border-rose-500/30 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95">
+                                <h3 className="text-xl font-bold text-rose-600 dark:text-rose-500 mb-4 flex items-center gap-2">
+                                    <Icon name="alert-triangle" className="text-rose-600 dark:text-rose-500" />
+                                    {t.deleteConfirmTitle}
+                                </h3>
+                                <p className="text-slate-600 dark:text-slate-300 text-sm mb-6 leading-relaxed">
+                                    {t.deleteConfirmDesc}
+                                </p>
+                                <div className="flex gap-3">
+                                    <button onClick={() => setShowDeleteModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
+                                    <button onClick={confirmDeleteCompetition} className="flex-1 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-500 transition-colors shadow-lg shadow-rose-500/30 dark:shadow-rose-900/20">{t.confirmDelete}</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showManageModal && (
+                        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95">
+                                <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                                    <Icon name={editingComp ? "edit" : "plus-circle"} className="text-blue-600 dark:text-blue-500" />
+                                    {editingComp ? t.editCompetition : t.addCompetition}
+                                </h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compName}</label>
+                                        <input type="text" value={compForm.name} onChange={e => setCompForm({...compForm, name: e.target.value})} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500" placeholder="e.g. Bitcoin" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compSymbol}</label>
+                                        <input type="text" value={compForm.symbol} onChange={e => setCompForm({...compForm, symbol: e.target.value.toUpperCase()})} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500 font-mono" placeholder="e.g. BTC" />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compCgId}</label>
+                                        <input type="text" value={compForm.coingeckoId} onChange={e => setCompForm({...compForm, coingeckoId: e.target.value.toLowerCase()})} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500 font-mono" placeholder="e.g. bitcoin" />
+                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{t.cgIdHint}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.compColor}</label>
+                                        <div className="flex gap-2 flex-wrap">
+                                            {colorOptions.map(opt => (
+                                                <button
+                                                    key={opt.id}
+                                                    onClick={() => setCompForm({...compForm, color: opt.id})}
+                                                    className={`w-8 h-8 rounded-full bg-gradient-to-br ${opt.gradient} border-2 transition-transform hover:scale-110 ${compForm.color === opt.id ? 'border-slate-400 dark:border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                        <button onClick={() => setShowManageModal(false)} className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.cancel}</button>
+                                        <button onClick={handleSaveCompetition} className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20">{t.save}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showManualModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/80 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 dark:bg-blue-600/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                                <div className="flex justify-between items-center mb-8 relative z-10">
+                                    <h3 className="font-bold text-xl text-slate-800 dark:text-white">{t.manualModalTitle}</h3>
+                                    <button onClick={() => setShowManualModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-all"><Icon name="x" size={20} /></button>
+                                </div>
+                                <div className="space-y-5 relative z-10">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.dateLabel}</label>
+                                        <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} className="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.volumeLabel}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
+                                            <input type="number" placeholder="Threshold: e.g. 85000" value={manualVolume} onChange={e => setManualVolume(e.target.value)} className="w-full pl-8 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.userVolumeLabel}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">$</span>
+                                            <input type="number" placeholder="Your Vol: e.g. 90000" value={manualUserVolume} onChange={e => setManualUserVolume(e.target.value)} className="w-full pl-8 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.rewardLabel} ({currentComp.symbol})</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="gift" size={14}/></span>
+                                            <input type="number" placeholder="e.g. 1200" value={manualReward} onChange={e => setManualReward(e.target.value)} className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.eligibilityLabel}</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold"><Icon name="list-ordered" size={14}/></span>
+                                            <input type="number" placeholder="e.g. 2000" value={manualEligibility} onChange={e => setManualEligibility(e.target.value)} className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 font-mono font-bold text-lg text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600" />
+                                        </div>
+                                    </div>
+                                    <button onClick={() => {
+                                        if(!manualVolume) return;
+                                        setDataList(prev => [...prev, { 
+                                            id: Date.now(), 
+                                            volume: parseFloat(manualVolume), 
+                                            userVolume: manualUserVolume ? parseFloat(manualUserVolume) : 0,
+                                            reward: manualReward ? parseFloat(manualReward) : (stats.latestReward || 0),
+                                            eligibility: manualEligibility ? parseFloat(manualEligibility) : (stats.latestEligibility || 0),
+                                            timestamp: new Date(manualDate).toISOString(), 
+                                            source: 'manual' 
+                                        }]);
+                                        setShowManualModal(false);
+                                        setManualVolume('');
+                                        setManualUserVolume('');
+                                        setManualReward('');
+                                        setManualEligibility('');
+                                    }} className="w-full py-5 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 dark:shadow-[0_0_20px_-5px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:shadow-xl dark:hover:shadow-[0_0_30px_-5px_rgba(37,99,235,0.7)] transition-all active:scale-[0.98] mt-4 border border-blue-400/20">
+                                        {t.confirmButton}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSettingsModal && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
+                            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                                        <Icon name="settings" className="text-blue-500" />
+                                        {t.settings}
+                                    </h3>
+                                    <button onClick={() => setShowSettingsModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 transition-all"><Icon name="x" size={20} /></button>
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">{t.apiKeyLabel}</label>
+                                        <input 
+                                            type="password" 
+                                            value={tempKey} 
+                                            onChange={e => setTempKey(e.target.value)} 
+                                            className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:border-blue-500" 
+                                            placeholder={t.apiKeyPlaceholder} 
+                                            autoFocus
+                                        />
+                                        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 leading-relaxed">{t.apiKeyHint}</p>
+                                    </div>
+                                    
+                                    <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                        <button onClick={clearKey} className="flex-1 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.clearKey}</button>
+                                        <button onClick={confirmSaveKey} className="flex-1 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20">{t.saveKey}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
