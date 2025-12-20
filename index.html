@@ -74,6 +74,33 @@
             -webkit-backdrop-filter: blur(12px);
         }
         
+        /* 新增：动态卡片特效 CSS */
+        @keyframes shimmer {
+            0% { transform: translateX(-150%) skewX(-20deg); }
+            40%, 100% { transform: translateX(150%) skewX(-20deg); }
+        }
+        .animate-shimmer {
+            animation: shimmer 3s infinite linear; 
+        }
+
+        @keyframes progress-stripes {
+            0% { background-position: 1rem 0; }
+            100% { background-position: 0 0; }
+        }
+        .animate-stripes {
+            background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent);
+            background-size: 1rem 1rem;
+            animation: progress-stripes 1s linear infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        .animate-pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        
         /* 输入框自动填充背景修复 */
         .dark input:-webkit-autofill,
         .dark input:-webkit-autofill:hover, 
@@ -400,7 +427,8 @@
         };
 
         // 倒计时组件 - 现代 60 秒跑马灯版 (彩虹像素风格)
-        const CountdownCard = ({ startDate, endDate, t }) => {
+        // 新增 symbol 属性以在UI上明确该倒计时所属币种
+        const CountdownCard = ({ startDate, endDate, symbol, t }) => {
             const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'noData', progress: 0 });
 
             useEffect(() => {
@@ -455,6 +483,14 @@
                 ended: 'text-slate-400 dark:text-slate-500',
                 noData: 'text-slate-400 dark:text-slate-500'
             };
+            
+            // 新增：倒计时卡片的脉冲颜色映射
+            const pulseColors = {
+                startsIn: 'bg-indigo-500',
+                endsIn: 'bg-cyan-500',
+                ended: 'bg-slate-400',
+                noData: 'bg-slate-400'
+            };
 
             const borderColors = {
                 startsIn: 'border-indigo-200 dark:border-indigo-500/30 hover:border-indigo-300 dark:hover:border-indigo-500/60',
@@ -480,10 +516,18 @@
                     <div className="relative z-10">
                         <div>
                             <div className="flex items-center gap-3 mb-3">
-                                <div className={`w-8 h-8 rounded-xl border flex items-center justify-center bg-white/50 dark:bg-white/5 ${statusColors[timeLeft.status]} border-white/20`}>
-                                    <Icon name={timeLeft.status === 'ended' ? "flag" : "clock"} size={18} />
+                                {/* 增加脉冲效果 */}
+                                <div className="relative">
+                                    <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${pulseColors[timeLeft.status]}`}></div>
+                                    <div className={`relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-white/50 dark:bg-white/5 ${statusColors[timeLeft.status]} border-white/20`}>
+                                        <Icon name={timeLeft.status === 'ended' ? "flag" : "clock"} size={18} />
+                                    </div>
                                 </div>
-                                <div className={`text-xs font-bold uppercase tracking-widest opacity-70 ${statusColors[timeLeft.status]}`}>{t.cardCountdown}</div>
+                                <div className="flex flex-col">
+                                    <div className={`text-xs font-bold uppercase tracking-widest opacity-70 ${statusColors[timeLeft.status]}`}>{t.cardCountdown}</div>
+                                    {/* 明确显示币种符号，强调数据独立性 */}
+                                    <div className="text-[10px] font-bold opacity-50">{symbol}</div>
+                                </div>
                             </div>
                             
                             {timeLeft.status === 'ended' ? (
@@ -546,6 +590,7 @@
         };
 
         const App = () => {
+            // ... existing state ...
             const [lang, setLang] = useState('zh');
             const [theme, setTheme] = useState('dark'); 
             const t = translations[lang];
@@ -682,6 +727,7 @@
                 localStorage.setItem(`night_data_${currentComp.id}`, JSON.stringify(newData));
             };
 
+            // ... fetchPrice and chartData ...
             useEffect(() => {
                 let isMounted = true;
                 const fetchPrice = async () => {
@@ -780,17 +826,18 @@
                 }
                 setShowManageModal(true);
             };
-
+            
+            // ... (other handlers: handleSaveCompetition, handleDeleteRequest, confirmDeleteCompetition, confirmSaveKey, clearKey, openSettingsModal, fetchWithRetry, callGeminiAPI, handleFileUpload, generateAIStrategy, updateCompetitionPeriod) ...
+            
+            // Copy handlers from previous block as they are unchanged but needed for context
             const handleSaveCompetition = () => {
                 if (!compForm.name || !compForm.symbol) return;
                 const selectedColor = colorOptions.find(c => c.id === compForm.color);
                 
-                // 处理时间：将日期字符串转换为 ISO 格式 (默认设为当天的 00:00:00)
                 const formatISODate = (dateStr, isEnd = false) => {
                     if (!dateStr) return null;
                     const date = new Date(dateStr);
                     if (isEnd) {
-                        // 结束日期默认设为当天的 23:59:59
                         date.setHours(23, 59, 59, 999);
                     } else {
                         date.setHours(0, 0, 0, 0);
@@ -806,7 +853,6 @@
                     color: compForm.color,
                     icon: selectedColor.icon,
                     gradient: selectedColor.gradient,
-                    // 修复：保存表单中的时间设置，如果表单没填则保留原值(仅编辑模式)，或为null
                     startDate: compForm.startDate ? formatISODate(compForm.startDate) : (editingComp ? editingComp.startDate : null),
                     endDate: compForm.endDate ? formatISODate(compForm.endDate, true) : (editingComp ? editingComp.endDate : null)
                 };
@@ -839,10 +885,8 @@
             };
 
             const confirmSaveKey = () => {
-                // Filter out empty keys if any, or keep them empty
                 setApiKeys(tempKeys);
                 localStorage.setItem('gemini_api_keys', JSON.stringify(tempKeys));
-                // Clear legacy key to avoid confusion
                 localStorage.removeItem('gemini_api_key');
                 setShowSettingsModal(false);
                 setError(null);
@@ -857,7 +901,7 @@
                 setShowSettingsModal(true);
             };
 
-            const fetchWithRetry = async (url, options, retryCount = 0) => {
+             const fetchWithRetry = async (url, options, retryCount = 0) => {
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
@@ -867,7 +911,7 @@
                     return await response.json();
                 } catch (err) {
                     if (err.message.includes('400') || err.message.includes('403') || err.message.includes('API key')) {
-                         throw err; // Propagate auth errors to failover logic
+                         throw err; 
                     }
                     if (retryCount < 5) {
                         const delay = Math.pow(2, retryCount) * 1000;
@@ -878,7 +922,6 @@
                 }
             };
             
-            // New Failover Logic Wrapper
             const callGeminiAPI = async (payload) => {
                 const validKeys = apiKeys.filter(k => k && k.trim() !== '');
                 if (validKeys.length === 0) throw new Error(t.errorApiKey);
@@ -895,17 +938,15 @@
                     } catch (error) {
                         console.warn("API Key failed, trying next...", error);
                         lastError = error;
-                        // Continue loop to next key
                     }
                 }
                 throw lastError || new Error("All API keys failed.");
             };
 
-            const handleFileUpload = async (event) => {
+             const handleFileUpload = async (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
                 
-                // Basic check if we have ANY keys
                 const hasKeys = apiKeys.some(k => k && k.trim() !== '');
                 if (!hasKeys) {
                     setError(t.errorApiKey);
@@ -937,7 +978,6 @@
                         Strictly return JSON string: { "volume": 123.45, "reward": 100, "userVolume": 200.5, "dataCutoff": "2023-10-25T14:30:00", "eligibility": 2000, "promotionStart": "2023-10-01", "promotionEnd": "2023-10-30" }
                     `;
 
-                    // Use the new failover wrapper
                     const result = await callGeminiAPI({
                         contents: [{
                             parts: [
@@ -1031,7 +1071,6 @@
                         Give specific strategy advice (short and concise, under 100 words).
                     `;
 
-                    // Use failover wrapper
                     const result = await callGeminiAPI({
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: { 
@@ -1058,15 +1097,12 @@
                     setIsGeneratingStrategy(false);
                 }
             };
-
-            // Function to update competition dates from Manual Entry Modal
-            // Accepts separate date, hour, minute. Constructs UTC+8 time then converts to standard ISO (UTC)
+            
             const updateCompetitionPeriod = (startDateStr, startHour, startMinute, endDateStr, endHour, endMinute) => {
                 if (!startDateStr && !endDateStr) return;
                 
                 const constructDate = (d, h, m) => {
                     if (!d) return null;
-                    // UTC+8 String Format: YYYY-MM-DDTHH:mm:00+08:00
                     const isoLocal = `${d}T${h}:${m}:00+08:00`;
                     return new Date(isoLocal).toISOString();
                 };
@@ -1089,6 +1125,7 @@
             return (
                 <div className="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-[#020617] dark:to-[#020617] transition-all duration-300">
                     <div className="max-w-6xl mx-auto">
+                        {/* Header ... */}
                         <header className="flex flex-col md:flex-row justify-between mb-8 gap-6 items-start md:items-center">
                             <div>
                                 <div className="flex flex-wrap items-center gap-4">
@@ -1103,7 +1140,7 @@
                                 </div>
                             </div>
                             <div className="flex gap-3 w-full md:w-auto justify-end items-center">
-                                {/* Price Card (Moved Here - Fixed Height h-12) */}
+                                {/* Price Card ... */}
                                 <div className="flex items-center gap-2 px-3 h-12 bg-indigo-50 dark:bg-indigo-900/40 rounded-xl border border-indigo-200 dark:border-indigo-500/30 backdrop-blur-md shadow-lg animate-in fade-in slide-in-from-top-2 group hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-all cursor-pointer box-border">
                                     <div className={`relative w-6 h-6 rounded-full bg-gradient-to-br ${currentComp.gradient} flex items-center justify-center text-white shadow-inner shrink-0`}>
                                         <Icon name={currentComp.icon} size={12} fill="white" className="text-white" />
@@ -1122,7 +1159,7 @@
                                     </div>
                                 </div>
 
-                                {/* Settings Group (Fixed Height h-12 to match Price Card) */}
+                                {/* Settings Group ... */}
                                 <div className="flex items-center h-12 bg-white dark:bg-slate-800/50 rounded-xl p-1 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-lg box-border">
                                     <button onClick={() => setLang('en')} className={`h-full px-3 rounded-lg text-xs font-bold transition-all flex items-center ${lang === 'en' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}>EN</button>
                                     <button onClick={() => setLang('zh')} className={`h-full px-3 rounded-lg text-xs font-bold transition-all flex items-center ${lang === 'zh' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'}`}>CN</button>
@@ -1154,7 +1191,11 @@
                                 </div>
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"><Icon name="coins" size={18} /></div>
+                                        {/* 增加脉冲效果 */}
+                                        <div className="relative">
+                                             <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-amber-500"></div>
+                                             <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20"><Icon name="coins" size={18} /></div>
+                                        </div>
                                         <div className="text-amber-900/70 dark:text-amber-200/70 text-xs font-bold uppercase tracking-widest">{t.rewardEst}</div>
                                     </div>
                                     <div className="flex items-baseline gap-0.5 text-amber-950 dark:text-white mb-3">
@@ -1164,9 +1205,7 @@
                                         </span>
                                     </div>
                                     
-                                    {/* Footer: Mini Badges - Left & Right Aligned (No Icons) */}
                                     <div className="flex items-center justify-between mt-auto">
-                                        {/* Token Badge (Left) */}
                                         <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
                                             <span>
                                                 {stats.latestReward ? stats.latestReward.toLocaleString() : '-'} 
@@ -1174,7 +1213,6 @@
                                             </span>
                                         </div>
 
-                                        {/* Eligibility Badge (Right) */}
                                         <div className="text-[10px] font-bold text-amber-950 dark:text-white flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-md border border-amber-100 dark:border-amber-500/20">
                                             <span>
                                                 <span className="opacity-60 mr-0.5">TOP</span> 
@@ -1185,8 +1223,14 @@
                                 </div>
                             </div>
 
-                            {/* Card 2: Countdown (New!) */}
-                            <CountdownCard startDate={currentComp.startDate} endDate={currentComp.endDate} t={t} />
+                            {/* Card 2: Countdown - 已在组件内部更新 */}
+                            <CountdownCard 
+                                key={currentComp.id} 
+                                startDate={currentComp.startDate} 
+                                endDate={currentComp.endDate} 
+                                symbol={currentComp.symbol}
+                                t={t} 
+                            />
 
                             {/* Card 3: Prediction */}
                             <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-violet-200 dark:border-violet-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 hover:border-violet-300 dark:hover:border-violet-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.02]">
@@ -1196,7 +1240,11 @@
                                 </div>
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"><Icon name="bot" size={18} /></div>
+                                        {/* 增加脉冲效果 */}
+                                        <div className="relative">
+                                            <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-violet-500"></div>
+                                            <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-violet-100 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-200 dark:border-violet-500/20"><Icon name="bot" size={18} /></div>
+                                        </div>
                                         <div className="text-violet-900/70 dark:text-violet-200/70 text-xs font-bold uppercase tracking-widest">{t.predictedNext}</div>
                                     </div>
                                     <div className="flex items-baseline gap-0.5 text-violet-950 dark:text-white">
@@ -1217,7 +1265,11 @@
                                 </div>
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-8 h-8 rounded-xl border flex items-center justify-center bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"><Icon name="crosshair" size={18} /></div>
+                                        {/* 增加脉冲效果 */}
+                                        <div className="relative">
+                                            <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-blue-500"></div>
+                                            <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20"><Icon name="crosshair" size={18} /></div>
+                                        </div>
                                         <div className="text-blue-900/70 dark:text-blue-200/70 text-xs font-bold uppercase tracking-widest">{t.currentThreshold}</div>
                                     </div>
                                     <div className="flex items-baseline gap-0.5 text-blue-950 dark:text-white">
@@ -1244,8 +1296,12 @@
                                 </div>
                                 <div className="relative z-10">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center ${stats.growthRate >= 0 ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'}`}>
-                                            <Icon name="percent" size={18} />
+                                        {/* 增加脉冲效果 */}
+                                        <div className="relative">
+                                            <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${stats.growthRate >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                                            <div className={`relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center ${stats.growthRate >= 0 ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'}`}>
+                                                <Icon name="percent" size={18} />
+                                            </div>
                                         </div>
                                         <div className={`${stats.growthRate >= 0 ? 'text-emerald-900/70 dark:text-emerald-200/70' : 'text-rose-900/70 dark:text-rose-200/70'} text-xs font-bold uppercase tracking-widest`}>{t.growthRate}</div>
                                     </div>
@@ -1262,15 +1318,23 @@
                             </div>
                         </div>
 
+                        {/* ... Rest of the component (Status Card, History List, Graph, Modals) ... */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <div className="lg:col-span-1 flex flex-col gap-6">
-                                {/* Status Card */}
-                                <div className={`glass-panel p-6 rounded-3xl border relative overflow-hidden transition-all duration-300 bg-white dark:bg-slate-900/60 backdrop-blur-md group hover:-translate-y-1 hover:scale-[1.02] shadow-sm hover:shadow-xl dark:shadow-lg ${
+                                {/* Status Card - 升级版动态效果 */}
+                                <div className={`glass-panel p-6 rounded-3xl border relative overflow-hidden transition-all duration-500 bg-white dark:bg-slate-900/60 backdrop-blur-md group hover:-translate-y-1 hover:scale-[1.02] shadow-sm hover:shadow-xl dark:shadow-lg ${
                                     stats.latestUserVolume >= stats.current 
-                                    ? 'border-emerald-100 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 dark:hover:shadow-emerald-900/30' 
-                                    : 'border-rose-100 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 dark:hover:shadow-rose-900/30'
+                                    ? 'border-emerald-100 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 shadow-emerald-500/5 dark:shadow-emerald-900/20' 
+                                    : 'border-rose-100 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 shadow-rose-500/5 dark:shadow-rose-900/20'
                                 }`}>
-                                    <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full blur-3xl opacity-10 dark:opacity-20 ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                                    {/* ... Status Card Content ... */}
+                                    {/* 1. 动态光感扫描层 (Scanning Beam) */}
+                                    <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
+                                        <div className={`absolute inset-0 h-full w-full bg-gradient-to-r from-transparent ${stats.latestUserVolume >= stats.current ? 'via-emerald-400/10' : 'via-rose-400/10'} to-transparent animate-shimmer`} style={{willChange: 'transform'}}></div>
+                                    </div>
+
+                                    {/* 2. 背景动态光晕 (Dynamic Glow) */}
+                                    <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full blur-3xl opacity-20 dark:opacity-30 transition-colors duration-500 animate-pulse ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
                                     
                                     {/* Watermark Icon */}
                                     <div className={`absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-12 pointer-events-none ${stats.latestUserVolume >= stats.current ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
@@ -1278,19 +1342,30 @@
                                     </div>
                                     
                                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-colors duration-300 ${
-                                            stats.latestUserVolume >= stats.current 
-                                            ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20' 
-                                            : 'bg-rose-100 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/20'
-                                        }`}>
-                                            <Icon name={stats.latestUserVolume >= stats.current ? "shield-check" : "alert-octagon"} size={18} />
+                                        {/* 3. 图标容器 + 脉冲波纹 (Radar Pulse) */}
+                                        <div className="relative">
+                                            {/* 波纹圆环 */}
+                                            <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
+                                            
+                                            <div className={`relative w-8 h-8 rounded-xl border flex items-center justify-center transition-colors duration-300 shadow-lg ${
+                                                stats.latestUserVolume >= stats.current 
+                                                ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' 
+                                                : 'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'
+                                            }`}>
+                                                <Icon name={stats.latestUserVolume >= stats.current ? "shield-check" : "alert-octagon"} size={18} />
+                                            </div>
                                         </div>
-                                        <div className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest">{t.statusTitle}</div>
+                                        
+                                        <div className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                            {t.statusTitle}
+                                            {/* 状态指示点 */}
+                                            <span className={`flex w-2 h-2 rounded-full ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500 animate-ping' : 'bg-rose-500 animate-pulse'}`}></span>
+                                        </div>
                                     </div>
 
                                     <div className="flex justify-between items-end mb-4 relative z-10">
                                         <div>
-                                            <div className={`text-4xl font-black tracking-tight flex items-baseline gap-1 ${stats.latestUserVolume >= stats.current ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
+                                            <div className={`text-4xl font-black tracking-tight flex items-baseline gap-1 transition-colors duration-300 ${stats.latestUserVolume >= stats.current ? 'text-emerald-500 dark:text-emerald-400 drop-shadow-sm' : 'text-rose-500 dark:text-rose-400 drop-shadow-sm'}`}>
                                                 <span>{stats.latestUserVolume >= stats.current ? '+' : ''}</span>
                                                 {stats.current > 0 ? ((stats.latestUserVolume - stats.current) / stats.current * 100).toFixed(2) : 0}
                                                 <span className="text-xl">%</span>
@@ -1301,17 +1376,17 @@
                                         </div>
                                         <div className="text-right">
                                              <div className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mb-1 uppercase">{t.legendUser}</div>
-                                             <div className="text-lg font-rounded font-bold text-slate-800 dark:text-white">${stats.latestUserVolume.toLocaleString()}</div>
+                                             <div className="text-lg font-rounded font-bold text-slate-800 dark:text-white tracking-tight">${stats.latestUserVolume.toLocaleString()}</div>
                                         </div>
                                     </div>
                                     
-                                    {/* Progress Bar Visual */}
-                                    <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex relative z-10">
-                                        <div className={`h-full rounded-full transition-all duration-1000 ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500 w-full' : 'bg-rose-500 w-full animate-pulse'}`}></div>
+                                    {/* 4. 动态条纹进度条 (Animated Striped Progress Bar) */}
+                                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex relative z-10 border border-slate-200 dark:border-slate-700/50">
+                                        <div className={`h-full rounded-full transition-all duration-1000 animate-stripes shadow-[0_0_10px_rgba(0,0,0,0.1)] ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500 w-full' : 'bg-rose-500 w-full'}`}></div>
                                     </div>
                                 </div>
 
-                                {/* Action Buttons Grid - Moved & Compacted */}
+                                {/* Action Buttons Grid */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <button 
                                         onClick={handleOpenManualEntry} 
@@ -1337,13 +1412,11 @@
                                         <input type="file" className="hidden" onChange={handleFileUpload} accept="image/*" disabled={isAnalyzing} />
                                     </label>
                                 </div>
-
+                                
                                 {/* History Snapshot List (Upgraded to match Core Cards) */}
                                 <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.01] flex flex-col max-h-[500px]">
-                                    {/* Gradient Background */}
+                                    {/* ... history list content ... */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
-                                    
-                                    {/* Background Icon */}
                                     <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 pointer-events-none">
                                         <Icon name="history" size={120} className="text-indigo-600 dark:text-indigo-500" />
                                     </div>
@@ -1432,7 +1505,8 @@
                                     </div>
                                 </div>
                             </div>
-
+                            
+                            {/* ... Graph and Strategy Section ... */}
                             <div className="lg:col-span-2 space-y-6">
                                 <div className="glass-panel p-6 rounded-3xl shadow-lg dark:shadow-2xl relative overflow-hidden bg-white dark:bg-slate-900/40">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-violet-500 opacity-50"></div>
@@ -1533,7 +1607,7 @@
                         </div>
                     </div>
 
-                    {/* ... Existing Modals ... */}
+                    {/* ... Modals (Select, Manual, Manage, Delete, Settings) ... */}
                     {showCompModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-xl animate-in fade-in">
                             <div className="w-full max-w-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-8 animate-in zoom-in-95 relative overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
