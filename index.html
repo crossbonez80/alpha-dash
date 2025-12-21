@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Alpha 交易赛分析终端</title>
     
-    <!-- PWA 配置 -->
+    <!-- PWA Configuration -->
     <meta name="application-name" content="AlphaDash">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AlphaDash">
-    <meta name="theme-color" content="#020617">
+    <meta name="theme-color" content="#000000">
 
-    <!-- 动态生成的 App 图标 (SVG Data URI) -->
+    <!-- Dynamic App Icon (SVG Data URI) -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'/%3E%3Cpath d='M19 3v4'/%3E%3Cpath d='M21 5h-4'/%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230f172a' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='24' height='24' fill='white'/%3E%3Cpath d='M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'/%3E%3Cpath d='M19 3v4'/%3E%3Cpath d='M21 5h-4'/%3E%3C/svg%3E">
 
@@ -45,15 +45,14 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
-        /* 引入圆润字体 Nunito */
+        /* Rounded Font Nunito */
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&display=swap');
         
         body { font-family: 'Inter', sans-serif; overscroll-behavior-y: none; }
         
-        /* 定义圆润字体类 */
         .font-rounded { font-family: 'Nunito', sans-serif; }
         
-        /* 自定义滚动条 - 适配明暗模式 */
+        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -61,20 +60,20 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* 动画类增强 */
+        /* Animation Utility Classes */
         .animate-in { animation-duration: 0.3s; animation-fill-mode: both; }
         .fade-in { animation-name: fadeIn; }
         .zoom-in-95 { animation-name: zoomIn95; }
         .slide-in-from-top-2 { animation-name: slideInFromTop2; }
         .slide-in-from-bottom-4 { animation-name: slideInFromBottom4; }
 
-        /* 玻璃拟态光效 */
+        /* Glassmorphism */
         .glass-panel {
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
         
-        /* 动态卡片特效 CSS */
+        /* Shimmer Effect */
         @keyframes shimmer {
             0% { transform: translateX(-150%) skewX(-20deg); }
             40%, 100% { transform: translateX(150%) skewX(-20deg); }
@@ -83,6 +82,7 @@
             animation: shimmer 3s infinite linear; 
         }
 
+        /* Progress Stripes */
         @keyframes progress-stripes {
             0% { background-position: 1rem 0; }
             100% { background-position: 0 0; }
@@ -93,6 +93,7 @@
             animation: progress-stripes 1s linear infinite;
         }
 
+        /* Pulse Ring */
         @keyframes pulse-ring {
             0% { transform: scale(0.8); opacity: 0.5; }
             100% { transform: scale(1.5); opacity: 0; }
@@ -101,7 +102,7 @@
             animation: pulse-ring 2s cubic-bezier(0, 0, 0.2, 1) infinite;
         }
         
-        /* 拖拽相关样式 */
+        /* Dragging Styles */
         .draggable-card {
             cursor: grab;
             transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.2s;
@@ -113,7 +114,6 @@
         }
         .draggable-card.dragging {
             opacity: 0.5;
-            /* 拖拽时隐藏原卡片的边框，只留虚线 */
         }
         .draggable-card.dragging > div {
              opacity: 0.5;
@@ -125,7 +125,7 @@
             opacity: 0; 
         }
         
-        /* 输入框自动填充背景修复 */
+        /* Input Autofill Fix for Dark Mode */
         .dark input:-webkit-autofill,
         .dark input:-webkit-autofill:hover, 
         .dark input:-webkit-autofill:focus, 
@@ -143,17 +143,16 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-200 selection:bg-blue-500/30 transition-colors duration-300">
+<body class="bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-200 selection:bg-blue-500/30 transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
-        // 引入 Recharts 组件
         const { AreaChart, Area, ComposedChart, Bar, Line, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } = window.Recharts;
         const { useState, useMemo, useEffect, useRef, useCallback } = React;
 
-        // --- 核心组件定义 ---
+        // --- Core Components ---
 
-        // 图标组件
+        // Icon Component
         const Icon = ({ name, size = 16, className = "" }) => {
             const iconRef = useRef(null);
             useEffect(() => {
@@ -180,7 +179,7 @@
         const CustomTooltip = ({ active, payload, label, t }) => {
             if (active && payload && payload.length) {
                 return (
-                    <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] min-w-[200px]">
+                    <div className="bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-[0_0_40px_-10px_rgba(0,0,0,0.7)] min-w-[200px] z-50">
                         <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-3">{label}</p>
                         <div className="flex items-center justify-between gap-4 mb-2">
                             <div className="flex items-center gap-2">
@@ -212,12 +211,11 @@
             return null;
         };
 
-        // --- 独立出来的卡片组件 ---
-        
-        // 1. Reward Card (Amber Gradient)
+        // --- Card Components ---
+        // 1. Reward Card
         const RewardCard = ({ stats, coinPrice, currentComp, t }) => (
             <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-amber-300 via-orange-400 to-yellow-400 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-amber-900/30 transition-all duration-300 group h-full">
-                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                <div className="relative overflow-hidden bg-white dark:bg-[#1a1005]/90 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-100/50 dark:from-amber-900/20 to-transparent opacity-50"></div>
                     <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
                         <Icon name="gift" size={120} className="text-amber-600 dark:text-amber-500" />
@@ -257,10 +255,10 @@
             </div>
         );
 
-        // 2. Prediction Card (Violet Gradient)
+        // 2. Prediction Card
         const PredictionCard = ({ stats, t }) => (
             <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-violet-300 via-purple-400 to-fuchsia-400 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-violet-900/30 transition-all duration-300 group h-full">
-                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                <div className="relative overflow-hidden bg-white dark:bg-[#150a1f]/90 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-violet-100/50 dark:from-violet-900/20 to-transparent opacity-50"></div>
                     <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12">
                         <Icon name="sparkles" size={120} className="text-violet-600 dark:text-violet-500" />
@@ -285,10 +283,10 @@
             </div>
         );
 
-        // 3. Threshold Card (Blue Gradient)
+        // 3. Threshold Card
         const ThresholdCard = ({ stats, t }) => (
             <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-blue-300 via-cyan-400 to-indigo-400 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-blue-900/30 transition-all duration-300 group h-full">
-                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                <div className="relative overflow-hidden bg-white dark:bg-[#0a121f]/90 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 dark:from-blue-900/20 to-transparent opacity-50"></div>
                     <div className="absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:rotate-12 group-active:rotate-12">
                         <Icon name="target" size={120} className="text-blue-600 dark:text-blue-500" />
@@ -319,15 +317,19 @@
             </div>
         );
 
-        // 4. Growth Card (Dynamic Gradient)
+        // 4. Growth Card
         const GrowthCard = ({ stats, t }) => {
             const gradientClass = stats.growthRate >= 0 
                 ? 'from-emerald-300 via-green-400 to-teal-400' 
                 : 'from-rose-300 via-red-400 to-orange-400';
+            
+            const darkBgClass = stats.growthRate >= 0 
+                ? 'dark:bg-[#022c22]/90' // Dark Emerald for positive
+                : 'dark:bg-[#450a0a]/90'; // Dark Red for negative
                 
             return (
                 <div className={`relative rounded-3xl p-[1px] bg-gradient-to-br ${gradientClass} shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full`}>
-                    <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                    <div className={`relative overflow-hidden bg-white ${darkBgClass} active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col`}>
                         <div className={`absolute inset-0 bg-gradient-to-br ${stats.growthRate >= 0 ? 'from-emerald-100/50 dark:from-emerald-900/20' : 'from-rose-100/50 dark:from-rose-900/20'} to-transparent opacity-50`}></div>
                         <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${stats.growthRate >= 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
                             <Icon name={stats.growthRate >= 0 ? "trending-up" : "trending-down"} size={120} />
@@ -357,7 +359,7 @@
             );
         };
 
-        // 5. Countdown Card (Dynamic Gradient)
+        // 5. Countdown Card
         const CountdownCard = ({ startDate, endDate, symbol, t }) => {
             const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'noData', progress: 0 });
 
@@ -431,7 +433,7 @@
 
             return (
                 <div className={`relative rounded-3xl p-[1px] bg-gradient-to-br ${borderGradients[timeLeft.status]} shadow-sm hover:shadow-xl dark:shadow-lg transition-all duration-300 group h-full`}>
-                    <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
+                    <div className="relative overflow-hidden bg-white dark:bg-[#0f101f]/90 active:bg-slate-200 dark:active:bg-slate-950 backdrop-blur-md rounded-[23px] h-full p-6 flex flex-col">
                         <div className={`absolute inset-0 bg-gradient-to-br ${timeLeft.status === 'endsIn' ? 'from-cyan-50/50 dark:from-cyan-900/10' : 'from-indigo-50/50 dark:from-indigo-900/10'} to-transparent opacity-50`}></div>
                         <div className={`absolute -right-4 -top-4 opacity-[0.1] group-hover:opacity-[0.2] group-active:opacity-[0.5] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${statusColors[timeLeft.status]}`}>
                             <Icon name="timer" size={120} />
@@ -461,7 +463,7 @@
                                     <span className="text-xs font-bold uppercase mr-1">d</span>
                                     <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-900 dark:text-white">{timeLeft.hours}</span>
                                     <span className="text-xs font-bold uppercase mr-1">h</span>
-                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg opacity-80 text-slate-900 dark:text-white">{timeLeft.minutes}</span>
+                                    <span className="text-3xl font-extrabold tracking-tight drop-shadow-sm opacity-80 text-slate-900 dark:text-white">{timeLeft.minutes}</span>
                                     <span className="text-xs font-bold uppercase mr-1 opacity-80">m</span>
                                 </div>
                             )}
@@ -496,8 +498,99 @@
                 </div>
             );
         };
+        
+        // --- Pixel Chart Component ---
+        const PixelChart = ({ data, t }) => {
+            if (!data || data.length === 0) return null;
 
-        // 默认比赛配置
+            // Determine Max Volume for Scaling (add 20% buffer)
+            const maxVol = Math.max(...data.map(d => Math.max(d.volume, d.userVolume || 0))) * 1.2;
+            const gridRows = 20; // Number of blocks vertically
+
+            return (
+                <div className="w-full h-full flex flex-col items-center justify-end pb-2 pt-8">
+                     <div className="w-full h-[360px] flex items-end justify-between px-2 gap-2 overflow-x-auto custom-scrollbar">
+                        {data.map((item, index) => {
+                            const thresholdBlocks = Math.ceil((item.volume / maxVol) * gridRows);
+                            const userBlocks = Math.ceil((item.userVolume / maxVol) * gridRows);
+                            const isSafe = item.userVolume >= item.volume;
+                            
+                            return (
+                                <div key={index} className="flex flex-col items-center gap-2 group min-w-[40px]">
+                                    {/* Tooltip Wrapper */}
+                                    <div className="relative flex items-end gap-[2px] h-[300px]">
+                                        
+                                        {/* Hover Tooltip */}
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+                                            <div className="bg-slate-900/90 text-white text-[10px] p-2 rounded-lg backdrop-blur-md border border-white/10 shadow-xl">
+                                                <div className="font-bold mb-1 border-b border-white/10 pb-1 text-center">{item.displayDay}</div>
+                                                <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                                                     <span className="text-slate-400">Threshold:</span>
+                                                     <span className="font-mono text-blue-400">${item.volume.toLocaleString()}</span>
+                                                     <span className="text-slate-400">You:</span>
+                                                     <span className={`font-mono ${isSafe ? 'text-emerald-400' : 'text-rose-400'}`}>${item.userVolume.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Threshold Column (Blue) */}
+                                        <div className="flex flex-col-reverse gap-[1px]">
+                                            {[...Array(gridRows)].map((_, i) => (
+                                                <div 
+                                                    key={`t-${i}`} 
+                                                    className={`w-3 h-2 rounded-[1px] transition-all duration-300 ${
+                                                        i < thresholdBlocks 
+                                                        ? 'bg-blue-500/80 shadow-[0_0_5px_rgba(59,130,246,0.5)]' 
+                                                        : 'bg-slate-200/20 dark:bg-slate-800/20'
+                                                    }`}
+                                                ></div>
+                                            ))}
+                                        </div>
+
+                                        {/* User Column (Dynamic Color) */}
+                                        <div className="flex flex-col-reverse gap-[1px]">
+                                            {[...Array(gridRows)].map((_, i) => (
+                                                <div 
+                                                    key={`u-${i}`} 
+                                                    className={`w-3 h-2 rounded-[1px] transition-all duration-300 ${
+                                                        i < userBlocks 
+                                                        ? (isSafe 
+                                                            ? 'bg-emerald-500/80 shadow-[0_0_5px_rgba(16,185,129,0.5)]' 
+                                                            : 'bg-rose-500/80 shadow-[0_0_5px_rgba(244,63,94,0.5)]')
+                                                        : 'bg-slate-200/20 dark:bg-slate-800/20'
+                                                    }`}
+                                                ></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Axis Label */}
+                                    <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-600 uppercase">
+                                        {item.displayDay.split(' ')[1]}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                     </div>
+                     
+                     {/* Legend */}
+                     <div className="flex gap-4 mt-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest bg-slate-100/50 dark:bg-slate-800/50 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700/50">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 bg-blue-500 rounded-[1px]"></div> Threshold
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-[1px]"></div> Safe
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 bg-rose-500 rounded-[1px]"></div> Risk
+                        </div>
+                     </div>
+                </div>
+            );
+        };
+
+
+        // Default Competition Config
         const defaultCompetitions = [
             { 
                 id: 'night', 
@@ -518,7 +611,7 @@
                 color: 'orange', 
                 icon: 'bitcoin', 
                 gradient: 'from-orange-500 to-amber-500',
-                startDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0], // 2天后开始
+                startDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0], 
                 endDate: new Date(Date.now() + 86400000 * 16).toISOString().split('T')[0] 
             },
             { 
@@ -529,7 +622,7 @@
                 color: 'blue', 
                 icon: 'zap', 
                 gradient: 'from-blue-500 to-cyan-500',
-                startDate: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0], // 3天前开始
+                startDate: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0],
                 endDate: new Date(Date.now() + 86400000 * 11).toISOString().split('T')[0] 
             },
             { 
@@ -540,12 +633,12 @@
                 color: 'emerald', 
                 icon: 'layers', 
                 gradient: 'from-emerald-400 to-teal-500',
-                startDate: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0], // 5天后开始
+                startDate: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0], 
                 endDate: new Date(Date.now() + 86400000 * 12).toISOString().split('T')[0] 
             }
         ];
 
-        // 颜色选项配置
+        // Color Options
         const colorOptions = [
             { id: 'indigo', label: 'Indigo', gradient: 'from-indigo-500 to-purple-600', icon: 'moon' },
             { id: 'orange', label: 'Orange', gradient: 'from-orange-500 to-amber-500', icon: 'bitcoin' },
@@ -555,7 +648,7 @@
             { id: 'violet', label: 'Violet', gradient: 'from-violet-500 to-fuchsia-600', icon: 'gem' },
         ];
 
-        // 默认初始数据
+        // Default Initial Data
         const initialDataMap = {
             night: [
                 { id: 'init-1', volume: 36129.54, userVolume: 42000.00, timestamp: new Date(Date.now() - 172800000).toISOString(), source: 'default', reward: 1700, eligibility: 20500 },
@@ -563,11 +656,10 @@
             ],
         };
 
-        // 翻译配置
+        // Translations
         const translations = {
             zh: {
                 subtitle: "数据驱动的交易赛入榜门槛预测系统",
-                // ... (existing translations)
                 manualEntry: "手动补录",
                 importScreenshot: "截图识别",
                 analyzing: "AI 识别中...",
@@ -649,7 +741,6 @@
                 key1Label: "主 API Key",
                 key2Label: "备用 Key 1",
                 key3Label: "备用 Key 2",
-                // 新增
                 developer: "开发者",
                 about: "关于",
                 donation: "捐赠",
@@ -660,11 +751,10 @@
                 copy: "复制",
                 copied: "已复制",
                 followX: "关注 X",
-                version: "版本 v4.6"
+                version: "版本 v6.2"
             },
             en: {
                 subtitle: "Data-driven Competition Threshold Prediction System",
-                // ... (existing translations)
                 manualEntry: "Entry",
                 importScreenshot: "Scan",
                 analyzing: "Scanning...",
@@ -746,7 +836,6 @@
                 key1Label: "Primary Key",
                 key2Label: "Backup Key 1",
                 key3Label: "Backup Key 2",
-                // New
                 developer: "Developer",
                 about: "About",
                 donation: "Donate",
@@ -757,7 +846,7 @@
                 copy: "Copy",
                 copied: "Copied",
                 followX: "Follow X",
-                version: "Version v4.6"
+                version: "Version v6.2"
             }
         };
 
@@ -766,7 +855,6 @@
             const [theme, setTheme] = useState('dark'); 
             const t = translations[lang];
 
-            // ... (existing state)
             const [cardOrder, setCardOrder] = useState(() => {
                 const savedOrder = localStorage.getItem('card_order');
                 return savedOrder ? JSON.parse(savedOrder) : ['reward', 'countdown', 'prediction', 'threshold', 'growth'];
@@ -780,7 +868,7 @@
                 if (theme === 'dark') {
                     root.classList.add('dark');
                     document.body.classList.add('dark');
-                    if(metaThemeColor) metaThemeColor.setAttribute("content", "#020617");
+                    if(metaThemeColor) metaThemeColor.setAttribute("content", "#000000");
                 } else {
                     root.classList.remove('dark');
                     document.body.classList.remove('dark');
@@ -838,6 +926,10 @@
             const [showAboutModal, setShowAboutModal] = useState(false);
             const [showDonationModal, setShowDonationModal] = useState(false);
             
+            // View Mode State
+            const [chartViewMode, setChartViewMode] = useState('curve'); // 'curve' or 'pixel'
+            const [isAICollapsed, setIsAICollapsed] = useState(false);
+
             // Multi-Key State Management
             const [apiKeys, setApiKeys] = useState(() => {
                 const savedKeys = localStorage.getItem('gemini_api_keys');
@@ -856,7 +948,6 @@
             const [coinPrice, setCoinPrice] = useState(0); 
             const [isLivePrice, setIsLivePrice] = useState(false);
 
-            // ... (useEffect and helper functions like parseISOToUTC8, persistData, etc.) ...
             useEffect(() => {
                 const savedData = localStorage.getItem(`night_data_${currentComp.id}`);
                 if (savedData) {
@@ -959,7 +1050,7 @@
                 return { current, growthRate, predictedNext: current * (1 + (growthRate / 100)), maxVolume, latestReward, latestUserVolume, latestEligibility };
             }, [chartData]);
 
-            // --- 拖拽逻辑 ---
+            // --- Drag Logic ---
             const handleDragStart = (e, index) => {
                 setDraggedItem(index);
                 e.dataTransfer.effectAllowed = 'move';
@@ -988,7 +1079,7 @@
                 setDraggedItem(null);
             };
 
-            // 卡片渲染映射
+            // Card Rendering
             const renderCard = (type) => {
                 switch(type) {
                     case 'reward':
@@ -1006,7 +1097,7 @@
                 }
             };
 
-            // ... helper functions (handleOpenManualEntry, openManageModal, etc.) ...
+            // --- Helpers ---
             const handleOpenManualEntry = () => {
                 setManualReward(stats.latestReward || '');
                 setManualEligibility(stats.latestEligibility || '');
@@ -1278,24 +1369,23 @@
                 try {
                     const dataStr = chartData.map(d => `${d.displayDay}: Threshold $${d.volume}, My Volume $${d.userVolume}`).join(', ');
                     
-                    // 升级版 Prompt：请求更结构化和详细的建议
                     const prompt = `
-                        你是一位拥有10年经验的加密货币交易比赛冲榜教练。请根据以下数据分析当前比赛形势，并为参赛者提供全面的冲榜建议。请用中文回答。
+                        You are an experienced trading competition coach with 10 years of experience. Please analyze the following data and provide comprehensive advice. Respond in ${lang === 'zh' ? 'Chinese' : 'English'}.
 
-                        [比赛数据]
-                        币种: ${currentComp.name} (${currentComp.symbol})
-                        历史门槛数据序列: ${dataStr}
-                        我的当前交易量: $${stats.latestUserVolume}
-                        当前上榜门槛: $${stats.current}
-                        预测下期门槛: $${stats.predictedNext}
+                        [Competition Data]
+                        Coin: ${currentComp.name} (${currentComp.symbol})
+                        Historical Thresholds: ${dataStr}
+                        My Volume: $${stats.latestUserVolume}
+                        Current Threshold: $${stats.current}
+                        Predicted Next Threshold: $${stats.predictedNext}
 
-                        [分析要求]
-                        请返回一个严格的 JSON 对象（不要Markdown格式），包含以下字段：
-                        1. "marketPhase" (string): 定义当前竞争阶段（如：早期试探、中期拉锯、周末冲刺、尾盘博弈等）。
-                        2. "riskLevel" (string): 评估被挤出榜单的风险（低/中/高/极高）。
-                        3. "analysis" (string): 深度形势研判（100字以内）。分析门槛增长速率（是加速还是减缓？），评估该用户的安全垫（Gap）是否足够，是否存在被"偷塔"的风险。
-                        4. "actionableAdvice" (array of strings): 3条具体的战术建议。例如："建议立即增加$5000交易量以建立20%的安全缓冲"、"观察UTC 0点前的波动"、"当前排名安全，可暂停操作节省手续费"等。
-                        5. "psychologicalTip" (string): 一句简短的交易心态建议（金句）。
+                        [Requirements]
+                        Return a strict JSON object (no Markdown) with these fields:
+                        1. "marketPhase" (string): Define the current phase (e.g. Accumulation, Surge, Final Sprint).
+                        2. "riskLevel" (string): Assessment of risk (Low/Medium/High).
+                        3. "analysis" (string): Deep dive analysis (under 100 words).
+                        4. "actionableAdvice" (array of strings): 3 specific tactical advices. Calculate specific USD targets.
+                        5. "psychologicalTip" (string): A short mindset tip.
                     `;
 
                     const result = await callGeminiAPI({
@@ -1322,6 +1412,7 @@
                     const strategyText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (strategyText) {
                         setAiStrategy(JSON.parse(strategyText));
+                        setIsAICollapsed(false); // Auto expand on new generation
                     }
                 } catch (e) {
                     setError(e.message);
@@ -1354,7 +1445,6 @@
             const hours = Array.from({length: 24}, (_, i) => i.toString().padStart(2, '0'));
             const minutes = ['00', '15', '30', '45'];
 
-            // Function for copy text
             const copyText = (text) => {
                 const textarea = document.createElement('textarea');
                 textarea.value = text;
@@ -1362,13 +1452,12 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                // Simple visual feedback could be added here
             };
 
             return (
-                <div className="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-slate-900 dark:via-[#020617] dark:to-[#020617] transition-all duration-300 flex flex-col">
+                <div className="min-h-screen p-4 md:p-8 bg-slate-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-[#0f172a] dark:via-[#000000] dark:to-[#000000] transition-all duration-300 flex flex-col">
                     <div className="max-w-6xl mx-auto flex-1 w-full">
-                        {/* Header ... */}
+                        {/* Header */}
                         <header className="flex flex-col md:flex-row justify-between mb-8 gap-6 items-start md:items-center">
                             <div>
                                 <div className="flex flex-wrap items-center gap-4">
@@ -1425,7 +1514,7 @@
                             </div>
                         )}
 
-                        {/* 可拖拽排序的网格布局 */}
+                        {/* Draggable Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                             {cardOrder.map((type, index) => (
                                 <div 
@@ -1436,29 +1525,30 @@
                                     onDrop={(e) => handleDrop(e, index)}
                                     onDragEnd={handleDragEnd}
                                     className={`draggable-card transition-all duration-300 ${draggedItem === index ? 'dragging' : ''}`}
-                                    title="按住拖拽以调整位置"
+                                    title="Drag to reorder"
                                 >
                                     {renderCard(type)}
                                 </div>
                             ))}
                         </div>
 
-                        {/* ... 下方内容 ... */}
+                        {/* Main Content Area */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            {/* ... Status Card & History ... */}
+                            
+                            {/* Left Column: Status & History */}
                             <div className="lg:col-span-1 flex flex-col gap-6">
-                                {/* Status Card - 升级版动态效果 */}
+                                {/* Status Card */}
                                 <div className={`glass-panel p-6 rounded-3xl border relative overflow-hidden transition-all duration-500 bg-white dark:bg-slate-900/60 backdrop-blur-md group hover:-translate-y-1 hover:scale-[1.02] shadow-sm hover:shadow-xl dark:shadow-lg ${
                                     stats.latestUserVolume >= stats.current 
                                     ? 'border-emerald-100 dark:border-emerald-500/30 hover:border-emerald-300 dark:hover:border-emerald-500/60 shadow-emerald-500/5 dark:shadow-emerald-900/20' 
                                     : 'border-rose-100 dark:border-rose-500/30 hover:border-rose-300 dark:hover:border-rose-500/60 shadow-rose-500/5 dark:shadow-rose-900/20'
                                 }`}>
-                                    {/* 1. 动态光感扫描层 (Scanning Beam) */}
+                                    {/* Scanning Beam */}
                                     <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden rounded-3xl">
                                         <div className={`absolute inset-0 h-full w-full bg-gradient-to-r from-transparent ${stats.latestUserVolume >= stats.current ? 'via-emerald-400/10' : 'via-rose-400/10'} to-transparent animate-shimmer`} style={{willChange: 'transform'}}></div>
                                     </div>
 
-                                    {/* 2. 背景动态光晕 (Dynamic Glow) */}
+                                    {/* Glow */}
                                     <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full blur-3xl opacity-20 dark:opacity-30 transition-colors duration-500 animate-pulse ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
                                     
                                     {/* Watermark Icon */}
@@ -1467,11 +1557,8 @@
                                     </div>
                                     
                                     <div className="flex items-center gap-3 mb-4 relative z-10">
-                                        {/* 3. 图标容器 + 脉冲波纹 (Radar Pulse) */}
                                         <div className="relative">
-                                            {/* 波纹圆环 */}
                                             <div className={`absolute inset-0 rounded-xl animate-pulse-ring ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500' : 'bg-rose-500'}`}></div>
-                                            
                                             <div className={`relative w-8 h-8 rounded-xl border flex items-center justify-center transition-colors duration-300 shadow-lg ${
                                                 stats.latestUserVolume >= stats.current 
                                                 ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' 
@@ -1483,7 +1570,6 @@
                                         
                                         <div className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
                                             {t.statusTitle}
-                                            {/* 状态指示点 */}
                                             <span className={`flex w-2 h-2 rounded-full ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500 animate-ping' : 'bg-rose-500 animate-pulse'}`}></span>
                                         </div>
                                     </div>
@@ -1505,13 +1591,13 @@
                                         </div>
                                     </div>
                                     
-                                    {/* 4. 动态条纹进度条 (Animated Striped Progress Bar) */}
+                                    {/* Progress Bar */}
                                     <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex relative z-10 border border-slate-200 dark:border-slate-700/50">
                                         <div className={`h-full rounded-full transition-all duration-1000 animate-stripes shadow-[0_0_10px_rgba(0,0,0,0.1)] ${stats.latestUserVolume >= stats.current ? 'bg-emerald-500 w-full' : 'bg-rose-500 w-full'}`}></div>
                                     </div>
                                 </div>
 
-                                {/* Action Buttons Grid */}
+                                {/* Action Buttons */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <button 
                                         onClick={handleOpenManualEntry} 
@@ -1538,9 +1624,8 @@
                                     </label>
                                 </div>
                                 
-                                {/* History Snapshot List (Upgraded to match Core Cards) */}
+                                {/* History List */}
                                 <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group hover:-translate-y-1 hover:scale-[1.01] flex flex-col max-h-[500px]">
-                                    {/* ... history list content ... */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
                                     <div className="absolute -right-4 -top-4 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 pointer-events-none">
                                         <Icon name="history" size={120} className="text-indigo-600 dark:text-indigo-500" />
@@ -1571,7 +1656,7 @@
                                                     : 'bg-rose-50/40 dark:bg-rose-900/10 border-rose-100/50 dark:border-rose-500/20 hover:border-rose-300 dark:hover:border-rose-500/50'
                                                 }`}>
                                                     
-                                                    {/* Header Row: Date & Delete */}
+                                                    {/* Row Header */}
                                                     <div className="flex justify-between items-center mb-1.5 px-1">
                                                         <div className="flex items-center gap-2">
                                                             <div className={`w-1.5 h-1.5 rounded-full ${item.source === 'ai' ? 'bg-cyan-400 shadow-sm' : 'bg-purple-400 shadow-sm'}`} />
@@ -1593,9 +1678,8 @@
                                                         </button>
                                                     </div>
 
-                                                    {/* Data Grid: Threshold vs User Volume */}
                                                     <div className="grid grid-cols-2 gap-2">
-                                                        {/* Threshold Box */}
+                                                        {/* Threshold */}
                                                         <div className="p-2 rounded-xl bg-white/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-700/30 flex flex-col justify-center shadow-sm">
                                                             <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase flex items-center gap-1">
                                                                 <Icon name="crosshair" size={10} />
@@ -1606,7 +1690,7 @@
                                                             </span>
                                                         </div>
 
-                                                        {/* User Volume Box (Colored) */}
+                                                        {/* User Volume */}
                                                         <div className={`p-2 rounded-xl border flex flex-col justify-center relative overflow-hidden shadow-sm ${
                                                             isSafe 
                                                             ? 'bg-emerald-100/40 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' 
@@ -1620,7 +1704,6 @@
                                                                 ${item.userVolume.toLocaleString()}
                                                             </span>
                                                             
-                                                            {/* Status Badge (Absolute) */}
                                                             <div className={`absolute top-2 right-2 w-1.5 h-1.5 rounded-full ${isSafe ? 'bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]'}`}></div>
                                                         </div>
                                                     </div>
@@ -1631,201 +1714,210 @@
                                 </div>
                             </div>
                             
-                            {/* ... Graph and Strategy Section ... */}
-                            <div className="lg:col-span-2 space-y-6">
-                                
-                                {/* 移动到上方：Gemini 赛项深度洞察卡片 (全新设计版 v3 - 详细建议) */}
-                                {aiStrategy && (
-                                    <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-xl dark:shadow-[0_0_30px_-5px_rgba(99,102,241,0.3)] animate-in slide-in-from-top-4 group">
-                                        {/* Inner Card Background */}
-                                        <div className="relative bg-white dark:bg-[#0f172a] rounded-[23px] h-full overflow-hidden">
-                                            
-                                            {/* Decorative Elements */}
-                                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-100 dark:bg-pink-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
-
-                                            {/* Card Content Container */}
-                                            <div className="relative z-10 p-6 md:p-8">
-                                                
-                                                {/* 1. Header: Title & Pills */}
-                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-white/5">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg shadow-indigo-500/30 text-white shrink-0">
-                                                            <Icon name="brain-circuit" size={20} />
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="text-base font-black text-slate-800 dark:text-white tracking-tight uppercase flex items-center gap-2">
-                                                                {t.geminiInsight}
-                                                                <span className="px-1.5 py-0.5 rounded text-[9px] bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 font-mono font-bold">PRO</span>
-                                                            </h3>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    {/* Status Pills */}
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 rounded-full text-[10px] font-bold border border-indigo-100 dark:border-indigo-500/20">
-                                                            {aiStrategy.marketPhase}
-                                                        </span>
-                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold border flex items-center gap-1.5 ${
-                                                            aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') 
-                                                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-100 dark:border-rose-500/20' 
-                                                            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border-emerald-100 dark:border-emerald-500/20'
-                                                        }`}>
-                                                            <div className={`w-1.5 h-1.5 rounded-full ${aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'}`}></div>
-                                                            {aiStrategy.riskLevel}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                    {/* 2. Analysis Column */}
-                                                    <div className="space-y-4">
-                                                        <div className="space-y-2">
-                                                            <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                                                                <Icon name="microscope" size={12} /> 形势研判
-                                                            </h4>
-                                                            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
-                                                                {aiStrategy.analysis || aiStrategy.strategy}
-                                                            </p>
-                                                        </div>
-
-                                                        {/* Mindset Tip */}
-                                                        {aiStrategy.psychologicalTip && (
-                                                            <div className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-r from-orange-50/80 to-amber-50/80 dark:from-orange-900/10 dark:to-amber-900/10 border border-orange-100 dark:border-orange-500/10">
-                                                                <Icon name="coffee" size={16} className="text-orange-400 mt-0.5 shrink-0" />
-                                                                <div>
-                                                                    <span className="text-[10px] font-bold text-orange-400 uppercase block mb-0.5">Mindset</span>
-                                                                    <p className="text-xs font-bold text-orange-700 dark:text-orange-200 italic">"{aiStrategy.psychologicalTip}"</p>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* 3. Actionable Advice Column */}
-                                                    <div>
-                                                        <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1">
-                                                            <Icon name="check-square" size={12} /> 建议行动
-                                                        </h4>
-                                                        <ul className="space-y-2">
-                                                            {aiStrategy.actionableAdvice && Array.isArray(aiStrategy.actionableAdvice) ? (
-                                                                aiStrategy.actionableAdvice.map((advice, idx) => (
-                                                                    <li key={idx} className="flex gap-3 items-start p-3 rounded-xl bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-colors group/item">
-                                                                        <div className="mt-0.5 w-5 h-5 rounded-full bg-indigo-50 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold shrink-0 group-hover/item:scale-110 transition-transform">
-                                                                            {idx + 1}
-                                                                        </div>
-                                                                        <span className="text-sm text-slate-700 dark:text-slate-200 font-medium leading-snug">{advice}</span>
-                                                                    </li>
-                                                                ))
-                                                            ) : (
-                                                                // Fallback for older format
-                                                                <li className="flex gap-3 items-start p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                                                                    <span className="text-sm text-slate-700 dark:text-slate-200">{aiStrategy.strategy}</span>
-                                                                </li>
-                                                            )}
-                                                        </ul>
-                                                        
-                                                        {/* Footer Actions */}
-                                                        <div className="flex justify-end mt-4">
-                                                            <button 
-                                                                className="text-[10px] font-bold text-slate-400 hover:text-indigo-500 dark:text-slate-500 dark:hover:text-indigo-400 flex items-center gap-1.5 transition-colors px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent hover:border-slate-200 dark:hover:border-slate-700" 
-                                                                onClick={() => copyText([
-                                                                    `Phase: ${aiStrategy.marketPhase}`,
-                                                                    `Analysis: ${aiStrategy.analysis}`,
-                                                                    `Advice: \n${aiStrategy.actionableAdvice?.map((a,i)=>`${i+1}. ${a}`).join('\n')}`
-                                                                ].join('\n\n'))}
-                                                            >
-                                                                <Icon name="copy" size={12} /> {t.copy || 'COPY REPORT'}
-                                                            </button>
-                                                        </div>
-                                                    </div>
+                            {/* Right Column: Unified Market Intelligence Hub */}
+                            <div className="lg:col-span-2 flex flex-col h-full">
+                                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 transition-all duration-300 flex flex-col h-full">
+                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/30 dark:from-indigo-900/10 to-transparent opacity-50 pointer-events-none"></div>
+                                    
+                                    {/* Container Header */}
+                                    <div className="relative z-10 px-6 py-5 border-b border-indigo-100 dark:border-indigo-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/50 dark:bg-slate-900/40">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                                                <Icon name="radar" size={20} />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-lg font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+                                                    Market Intelligence
+                                                    <span className="px-1.5 py-0.5 rounded text-[9px] bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 font-mono font-bold uppercase tracking-wider">HUB</span>
+                                                </h2>
+                                                <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                                    {t.growthCurve} & AI Analysis
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
 
-                                {/* 升级版 Growth Curve 卡片 - 与 Core Cards 风格统一 */}
-                                <div className="relative overflow-hidden bg-white dark:bg-slate-900/60 backdrop-blur-md p-6 rounded-3xl border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:shadow-xl dark:shadow-lg dark:hover:shadow-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-500/60 transition-all duration-300 group">
-                                    
-                                    {/* 背景渐变 */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
-                                    
-                                    {/* 巨大水印图标 */}
-                                    <div className="absolute -right-8 -top-8 opacity-[0.05] group-hover:opacity-[0.1] transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-6 pointer-events-none">
-                                        <Icon name="activity" size={240} className="text-indigo-600 dark:text-indigo-500" />
+                                        <div className="flex gap-2 w-full sm:w-auto">
+                                             {/* View Toggle */}
+                                            <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex border border-slate-200 dark:border-slate-700 shrink-0">
+                                                <button 
+                                                    onClick={() => setChartViewMode('curve')}
+                                                    className={`p-2 rounded-lg transition-all ${chartViewMode === 'curve' ? 'bg-white dark:bg-slate-600 shadow-sm text-indigo-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                                    title="Curve View"
+                                                >
+                                                    <Icon name="waves" size={18} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => setChartViewMode('pixel')}
+                                                    className={`p-2 rounded-lg transition-all ${chartViewMode === 'pixel' ? 'bg-white dark:bg-slate-600 shadow-sm text-indigo-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                                                    title="Pixel Analysis View"
+                                                >
+                                                    <Icon name="bar-chart-2" size={18} />
+                                                </button>
+                                            </div>
+
+                                            <button 
+                                                onClick={generateAIStrategy} 
+                                                disabled={isGeneratingStrategy}
+                                                className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:shadow-lg dark:hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.6)] border border-white/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                            >
+                                                <Icon name={isGeneratingStrategy ? "loader-2" : "sparkles"} className={isGeneratingStrategy ? "animate-spin" : ""} size={16} />
+                                                {isGeneratingStrategy ? t.aiAnalyzing : t.aiAnalysis}
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    <div className="flex justify-between items-center mb-8 relative z-10">
-                                        <h2 className="font-bold text-slate-700 dark:text-slate-200 flex items-center gap-3">
-                                            {/* 标题图标 - 增加脉冲效果 */}
-                                            <div className="relative">
-                                                <div className="absolute inset-0 rounded-xl animate-pulse-ring bg-indigo-500 opacity-70"></div>
-                                                <div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20">
-                                                    <Icon name="activity" size={18} />
+                                    {/* Content Area */}
+                                    <div className="relative z-10 flex-1 flex flex-col p-4 sm:p-6 overflow-hidden">
+                                        
+                                        {/* 1. AI Layer (Collapsible Overlay) */}
+                                        {aiStrategy && (
+                                            <div className="mb-6 animate-in slide-in-from-top-4 fade-in duration-500">
+                                                <div className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+                                                    isAICollapsed 
+                                                    ? 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/50' 
+                                                    : 'bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-indigo-200 dark:border-indigo-500/30 shadow-lg'
+                                                }`}>
+                                                    {/* Header / Summary Bar */}
+                                                    <div 
+                                                        className="p-4 flex items-center justify-between cursor-pointer group select-none"
+                                                        onClick={() => setIsAICollapsed(!isAICollapsed)}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${isAICollapsed ? 'bg-slate-200 dark:bg-slate-700 text-slate-500' : 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'}`}>
+                                                                <Icon name="brain-circuit" size={18} />
+                                                            </div>
+                                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                                                <span className="font-bold text-slate-700 dark:text-slate-200 text-sm">{t.geminiInsight}</span>
+                                                                {(
+                                                                    <div className="flex gap-2">
+                                                                        <span className="px-2 py-0.5 bg-white/50 dark:bg-black/20 rounded text-[10px] font-bold text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700/50">
+                                                                            {aiStrategy.marketPhase}
+                                                                        </span>
+                                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 border ${
+                                                                            aiStrategy.riskLevel.includes('High') || aiStrategy.riskLevel.includes('高') 
+                                                                            ? 'bg-rose-100/50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30' 
+                                                                            : 'bg-emerald-100/50 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30'
+                                                                        }`}>
+                                                                            {aiStrategy.riskLevel}
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:block">
+                                                                {isAICollapsed ? 'Expand Report' : 'Minimize'}
+                                                             </span>
+                                                             <Icon name={isAICollapsed ? "chevron-down" : "chevron-up"} size={16} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Full Content (Collapsible) */}
+                                                    {!isAICollapsed && (
+                                                        <div className="px-4 pb-4 sm:px-6 sm:pb-6 pt-0 animate-in slide-in-from-top-2 fade-in">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-indigo-100/50 dark:border-white/5">
+                                                                {/* Left: Analysis */}
+                                                                <div className="space-y-3">
+                                                                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                                                                        {aiStrategy.analysis || aiStrategy.strategy}
+                                                                    </p>
+                                                                    {aiStrategy.psychologicalTip && (
+                                                                        <div className="flex items-start gap-2.5 p-2.5 rounded-lg bg-orange-50/50 dark:bg-orange-500/5 border border-orange-100 dark:border-orange-500/10">
+                                                                            <Icon name="coffee" size={14} className="text-orange-400 mt-0.5 shrink-0" />
+                                                                            <p className="text-xs font-bold text-orange-700 dark:text-orange-300 italic">"{aiStrategy.psychologicalTip}"</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                
+                                                                {/* Right: Advice */}
+                                                                <div>
+                                                                    <ul className="space-y-2 mb-3">
+                                                                        {aiStrategy.actionableAdvice && Array.isArray(aiStrategy.actionableAdvice) ? (
+                                                                            aiStrategy.actionableAdvice.map((advice, idx) => (
+                                                                                <li key={idx} className="flex gap-2 items-start text-sm text-slate-700 dark:text-slate-200">
+                                                                                    <div className="mt-1 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-[10px] font-bold shrink-0">
+                                                                                        {idx + 1}
+                                                                                    </div>
+                                                                                    <span className="leading-snug">{advice}</span>
+                                                                                </li>
+                                                                            ))
+                                                                        ) : null}
+                                                                    </ul>
+                                                                    <div className="flex justify-end">
+                                                                        <button 
+                                                                            className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                copyText(`[AlphaDash AI Report]\nPhase: ${aiStrategy.marketPhase}\nRisk: ${aiStrategy.riskLevel}\n\n${aiStrategy.analysis}\n\nAdvice:\n${aiStrategy.actionableAdvice?.map((a,i)=>`${i+1}. ${a}`).join('\n')}`);
+                                                                            }}
+                                                                        >
+                                                                            <Icon name="copy" size={12} /> COPY
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                            <span className="text-lg tracking-tight">{t.growthCurve}</span>
-                                        </h2>
-                                        <button 
-                                            onClick={generateAIStrategy} 
-                                            disabled={isGeneratingStrategy}
-                                            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 hover:shadow-lg dark:hover:shadow-[0_0_20px_-5px_rgba(99,102,241,0.6)] border border-white/10 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <Icon name={isGeneratingStrategy ? "loader-2" : "sparkles"} className={isGeneratingStrategy ? "animate-spin" : ""} />
-                                            {isGeneratingStrategy ? t.aiAnalyzing : t.aiAnalysis}
-                                        </button>
-                                    </div>
-                                    <div className="h-[420px] w-full relative z-10">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <AreaChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 20 }}>
-                                                <defs>
-                                                    <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                                                    </linearGradient>
-                                                    <linearGradient id="colorUser" x1="0" y1="0" x2="0" y2="1">
-                                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                                    </linearGradient>
-                                                </defs>
-                                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? "#1e293b" : "#e2e8f0"} />
-                                                <XAxis 
-                                                    dataKey="displayDay" 
-                                                    axisLine={false} 
-                                                    tickLine={false} 
-                                                    tick={{fontSize:11, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:600}} 
-                                                    dy={15} 
-                                                    padding={{ left: 10, right: 10 }}
-                                                />
-                                                <YAxis 
-                                                    axisLine={false} 
-                                                    tickLine={false} 
-                                                    tick={{fontSize:11, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:600}} 
-                                                    tickFormatter={v => `$${(v/1000).toFixed(0)}k`} 
-                                                    dx={-15} 
-                                                />
-                                                <Tooltip content={<CustomTooltip t={t} />} cursor={{stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '4 4'}} />
-                                                <Area 
-                                                    type="monotone" 
-                                                    dataKey="volume" 
-                                                    stroke="#3b82f6" 
-                                                    strokeWidth={3} 
-                                                    fill="url(#colorVol)" 
-                                                    animationDuration={1500}
-                                                    activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', stroke: '#3b82f6', strokeWidth: 4 }}
-                                                />
-                                                <Area 
-                                                    type="monotone" 
-                                                    dataKey="userVolume" 
-                                                    stroke="#10b981" 
-                                                    strokeWidth={3} 
-                                                    fill="url(#colorUser)" 
-                                                    strokeDasharray="5 5"
-                                                    animationDuration={1500}
-                                                    activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', stroke: '#10b981', strokeWidth: 4 }}
-                                                />
-                                            </AreaChart>
-                                        </ResponsiveContainer>
+                                        )}
+
+                                        {/* 2. Chart Layer (Always Visible) */}
+                                        <div className="flex-1 w-full min-h-[300px] relative">
+                                            {chartViewMode === 'curve' ? (
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                        <defs>
+                                                            <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                                                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                                            </linearGradient>
+                                                            <linearGradient id="colorUser" x1="0" y1="0" x2="0" y2="1">
+                                                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                                            </linearGradient>
+                                                        </defs>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? "#1e293b" : "#e2e8f0"} />
+                                                        <XAxis 
+                                                            dataKey="displayDay" 
+                                                            axisLine={false} 
+                                                            tickLine={false} 
+                                                            tick={{fontSize:10, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:700}} 
+                                                            dy={10} 
+                                                        />
+                                                        <YAxis 
+                                                            axisLine={false} 
+                                                            tickLine={false} 
+                                                            tick={{fontSize:10, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:700}} 
+                                                            tickFormatter={v => `${(v/1000).toFixed(0)}k`} 
+                                                        />
+                                                        <Tooltip content={<CustomTooltip t={t} />} cursor={{stroke: '#6366f1', strokeWidth: 1.5, strokeDasharray: '4 4'}} />
+                                                        <Area 
+                                                            type="monotone" 
+                                                            dataKey="volume" 
+                                                            stroke="#6366f1" 
+                                                            strokeWidth={3} 
+                                                            fill="url(#colorVol)" 
+                                                            animationDuration={1500}
+                                                            activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', stroke: '#6366f1', strokeWidth: 4 }}
+                                                        />
+                                                        <Area 
+                                                            type="monotone" 
+                                                            dataKey="userVolume" 
+                                                            stroke="#10b981" 
+                                                            strokeWidth={3} 
+                                                            fill="url(#colorUser)" 
+                                                            strokeDasharray="4 4"
+                                                            animationDuration={1500}
+                                                            activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', stroke: '#10b981', strokeWidth: 4 }}
+                                                        />
+                                                    </AreaChart>
+                                                </ResponsiveContainer>
+                                            ) : (
+                                                <PixelChart data={chartData} t={t} />
+                                            )}
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -1835,8 +1927,6 @@
                     {/* Footer Info Cards */}
                     <div className="max-w-6xl mx-auto w-full mt-8 mb-4">
                         <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
-                            
-                            {/* Version Card (New position) */}
                             <div className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all cursor-default group">
                                 <Icon name="tag" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-emerald-400 transition-colors" />
                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">v4.6</span>
@@ -1844,7 +1934,6 @@
 
                             <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
 
-                            {/* X Link Card */}
                             <a href="https://x.com/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
                                 <Icon name="twitter" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-blue-400 transition-colors" />
                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.followX}</span>
@@ -1852,7 +1941,6 @@
 
                             <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
 
-                            {/* About Button */}
                             <button onClick={() => setShowAboutModal(true)} className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
                                 <Icon name="info" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-indigo-400 transition-colors" />
                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.about}</span>
@@ -1860,15 +1948,14 @@
 
                             <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
 
-                            {/* Donation Button */}
-                            <button onClick={() => setShowDonationModal(true)} className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
+                            <button onClick={() => setShowDonationModal(false)} className="flex items-center justify-center gap-2 h-10 px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all active:scale-95 group">
                                 <Icon name="heart" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-rose-400 transition-colors" />
                                 <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">{t.donation}</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* ... Modals (Select, Manual, Manage, Delete, Settings) ... */}
+                    {/* Modals */}
                     {showCompModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-xl animate-in fade-in">
                             <div className="w-full max-w-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 rounded-[2rem] p-8 animate-in zoom-in-95 relative overflow-hidden max-h-[90vh] flex flex-col shadow-2xl">
@@ -1882,7 +1969,6 @@
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto custom-scrollbar p-1">
                                     {competitions.map(comp => (
                                         <div key={comp.id} className="relative group">
-                                            {/* Action Buttons (Hidden by default, show on hover/touch) */}
                                             <div className="absolute top-2 right-2 flex gap-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                 <button 
                                                     onClick={(e) => { 
@@ -1951,7 +2037,6 @@
                                     <button onClick={() => setShowManualModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-all"><Icon name="x" size={20} /></button>
                                 </div>
                                 <div className="space-y-4 relative z-10">
-                                    {/* ... Manual Modal Content ... */}
                                     <div className="space-y-1">
                                         <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">{t.dateLabel}</label>
                                         <input type="date" value={manualDate} onChange={e => setManualDate(e.target.value)} className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium text-slate-700 dark:text-slate-200 outline-none transition-all placeholder-slate-400 dark:placeholder-slate-600 text-sm" />
@@ -2130,11 +2215,9 @@
                         </div>
                     )}
 
-                    {/* 管理/编辑赛道模态框 */}
                     {showManageModal && (
                         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
                             <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-md rounded-[2rem] shadow-2xl p-6 animate-in zoom-in-95 relative overflow-hidden">
-                                {/* 背景装饰 */}
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-100 dark:bg-indigo-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                                 
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2 relative z-10">
@@ -2190,7 +2273,6 @@
                                         </div>
                                     </div>
 
-                                    {/* 比赛周期设置区域 */}
                                     <div className="pt-4 border-t border-slate-100 dark:border-slate-800 mt-4">
                                         <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block ml-1 mb-2">{t.periodLabel}</label>
                                         <div className="grid grid-cols-2 gap-3">
@@ -2224,7 +2306,6 @@
                         </div>
                     )}
 
-                    {/* 删除确认模态框 */}
                     {showDeleteModal && (
                          <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
                             <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-6 animate-in zoom-in-95">
@@ -2243,7 +2324,6 @@
                         </div>
                     )}
 
-                    {/* About Modal */}
                     {showAboutModal && (
                         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
                             <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95 relative overflow-hidden">
@@ -2260,7 +2340,6 @@
                         </div>
                     )}
 
-                    {/* Donation Modal */}
                     {showDonationModal && (
                         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 dark:bg-black/90 backdrop-blur-md animate-in fade-in">
                             <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 w-full max-w-sm rounded-[2rem] shadow-2xl p-8 animate-in zoom-in-95 relative overflow-hidden">
