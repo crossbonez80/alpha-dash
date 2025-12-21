@@ -1185,17 +1185,28 @@
             const openManageModal = (comp = null) => {
                 if (comp) {
                     setEditingComp(comp);
+                    const startData = parseISOToUTC8(comp.startDate);
+                    const endData = parseISOToUTC8(comp.endDate);
+                    
                     setCompForm({ 
                         name: comp.name, 
                         symbol: comp.symbol, 
                         coingeckoId: comp.coingeckoId, 
                         color: comp.color,
-                        startDate: comp.startDate ? comp.startDate.split('T')[0] : '',
-                        endDate: comp.endDate ? comp.endDate.split('T')[0] : ''
+                        startDate: startData.date,
+                        startHour: startData.hour,
+                        startMinute: startData.minute,
+                        endDate: endData.date,
+                        endHour: endData.hour,
+                        endMinute: endData.minute
                     });
                 } else {
                     setEditingComp(null);
-                    setCompForm({ name: '', symbol: '', coingeckoId: '', color: 'indigo', startDate: '', endDate: '' });
+                    setCompForm({ 
+                        name: '', symbol: '', coingeckoId: '', color: 'indigo', 
+                        startDate: '', startHour: '00', startMinute: '00',
+                        endDate: '', endHour: '00', endMinute: '00'
+                    });
                 }
                 setShowManageModal(true);
             };
@@ -1204,15 +1215,11 @@
                 if (!compForm.name || !compForm.symbol) return;
                 const selectedColor = colorOptions.find(c => c.id === compForm.color);
                 
-                const formatISODate = (dateStr, isEnd = false) => {
-                    if (!dateStr) return null;
-                    const date = new Date(dateStr);
-                    if (isEnd) {
-                        date.setHours(23, 59, 59, 999);
-                    } else {
-                        date.setHours(0, 0, 0, 0);
-                    }
-                    return date.toISOString();
+                const constructDate = (d, h, m) => {
+                    if (!d) return null;
+                    // Construct ISO string assuming input is UTC+8
+                    const isoLocal = `${d}T${h}:${m}:00+08:00`;
+                    return new Date(isoLocal).toISOString();
                 };
 
                 const newComp = {
@@ -1223,8 +1230,8 @@
                     color: compForm.color,
                     icon: selectedColor.icon,
                     gradient: selectedColor.gradient,
-                    startDate: compForm.startDate ? formatISODate(compForm.startDate) : (editingComp ? editingComp.startDate : null),
-                    endDate: compForm.endDate ? formatISODate(compForm.endDate, true) : (editingComp ? editingComp.endDate : null)
+                    startDate: compForm.startDate ? constructDate(compForm.startDate, compForm.startHour, compForm.startMinute) : (editingComp ? editingComp.startDate : null),
+                    endDate: compForm.endDate ? constructDate(compForm.endDate, compForm.endHour, compForm.endMinute) : (editingComp ? editingComp.endDate : null)
                 };
 
                 if (editingComp) {
@@ -2339,7 +2346,7 @@
                                         <input 
                                             type="text" 
                                             value={compForm.symbol} 
-                                            onChange={e => setCompForm({...compForm, symbol: e.target.value})} 
+                                            onChange={e => setCompForm({...compForm, symbol: e.target.value.toUpperCase()})} 
                                             className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400 font-mono"
                                             placeholder="e.g. BTC" 
                                         />
@@ -2349,9 +2356,29 @@
                                         <input 
                                             type="text" 
                                             value={compForm.coingeckoId} 
-                                            onChange={e => setCompForm({...compForm, coingeckoId: e.target.value})} 
+                                            onChange={e => {
+                                                let val = e.target.value;
+                                                // 自动从 CoinGecko URL 提取 ID
+                                                if (val.includes('coingecko.com') && val.includes('/coins/')) {
+                                                    try {
+                                                        // 分割 URL 获取 coins 后的部分
+                                                        const parts = val.split('/coins/');
+                                                        if (parts.length > 1) {
+                                                            // 获取 ID (处理可能的后续路径或参数)
+                                                            let id = parts[1].split('/')[0];
+                                                            id = id.split('?')[0]; // 去除查询参数
+                                                            id = id.split('#')[0]; // 去除哈希
+                                                            val = id;
+                                                        }
+                                                    } catch (err) {
+                                                        // 解析失败则保留原值
+                                                        console.warn("Failed to extract ID from URL");
+                                                    }
+                                                }
+                                                setCompForm({...compForm, coingeckoId: val});
+                                            }} 
                                             className="w-full p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 placeholder-slate-400 font-mono text-sm"
-                                            placeholder="e.g. bitcoin" 
+                                            placeholder="e.g. bitcoin or paste URL" 
                                         />
                                         <p className="text-[10px] text-slate-400 ml-1">{t.cgIdHint}</p>
                                     </div>
@@ -2376,21 +2403,57 @@
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-400 ml-1 block">{t.startLabel}</label>
-                                                <input 
-                                                    type="date" 
-                                                    value={compForm.startDate} 
-                                                    onChange={e => setCompForm({...compForm, startDate: e.target.value})} 
-                                                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
-                                                />
+                                                <div className="flex flex-col gap-1.5">
+                                                    <input 
+                                                        type="date" 
+                                                        value={compForm.startDate} 
+                                                        onChange={e => setCompForm({...compForm, startDate: e.target.value})} 
+                                                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                                                    />
+                                                    <div className="flex gap-1">
+                                                        <select 
+                                                            value={compForm.startHour} 
+                                                            onChange={e => setCompForm({...compForm, startHour: e.target.value})} 
+                                                            className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            {hours.map(h => <option key={h} value={h}>{h}</option>)}
+                                                        </select>
+                                                        <select 
+                                                            value={compForm.startMinute} 
+                                                            onChange={e => setCompForm({...compForm, startMinute: e.target.value})} 
+                                                            className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            {minutes.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-[10px] font-bold text-slate-400 ml-1 block">{t.endLabel}</label>
-                                                <input 
-                                                    type="date" 
-                                                    value={compForm.endDate} 
-                                                    onChange={e => setCompForm({...compForm, endDate: e.target.value})} 
-                                                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
-                                                />
+                                                <div className="flex flex-col gap-1.5">
+                                                    <input 
+                                                        type="date" 
+                                                        value={compForm.endDate} 
+                                                        onChange={e => setCompForm({...compForm, endDate: e.target.value})} 
+                                                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-slate-700 dark:text-slate-200 text-xs"
+                                                    />
+                                                    <div className="flex gap-1">
+                                                        <select 
+                                                            value={compForm.endHour} 
+                                                            onChange={e => setCompForm({...compForm, endHour: e.target.value})} 
+                                                            className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            {hours.map(h => <option key={h} value={h}>{h}</option>)}
+                                                        </select>
+                                                        <select 
+                                                            value={compForm.endMinute} 
+                                                            onChange={e => setCompForm({...compForm, endMinute: e.target.value})} 
+                                                            className="w-1/2 p-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 appearance-none text-center outline-none focus:ring-2 focus:ring-indigo-500"
+                                                        >
+                                                            {minutes.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
