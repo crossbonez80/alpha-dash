@@ -1166,12 +1166,18 @@
                 setManualUserVolume('');
                 setManualDate(new Date().toISOString().split('T')[0]);
                 
-                setManualStartDate('');
-                setManualStartHour('00');
-                setManualStartMinute('00');
-                setManualEndDate('');
-                setManualEndHour('00');
-                setManualEndMinute('00');
+                // FIX: Do not reset to empty. Instead, load existing competition dates.
+                // previously: setManualStartDate(''); ...
+                
+                const startData = parseISOToUTC8(currentComp.startDate);
+                setManualStartDate(startData.date);
+                setManualStartHour(startData.hour);
+                setManualStartMinute(startData.minute);
+                
+                const endData = parseISOToUTC8(currentComp.endDate);
+                setManualEndDate(endData.date);
+                setManualEndHour(endData.hour);
+                setManualEndMinute(endData.minute);
                 
                 setShowManualModal(true);
             };
