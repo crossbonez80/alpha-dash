@@ -1047,9 +1047,13 @@
                         const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${currentComp.coingeckoId}&vs_currencies=usd`);
                         if (response.ok) {
                             const data = await response.json();
+                            // 检查 API 是否真的返回了该 ID 的数据
                             if (isMounted && data[currentComp.coingeckoId] && data[currentComp.coingeckoId].usd) {
                                 setCoinPrice(data[currentComp.coingeckoId].usd);
                                 setIsLivePrice(true);
+                            } else {
+                                // API 返回 200 但没有数据 (可能是 ID 错误或新币无价格) -> 抛出错误以触发 Fallback
+                                throw new Error("No price data found");
                             }
                         } else {
                             if (isMounted) setIsLivePrice(false);
@@ -1057,11 +1061,13 @@
                         }
                     } catch (e) {
                         if (isMounted) {
+                            // Fallback 机制：如果获取失败或无数据，生成微小的随机波动，保持界面活跃
                             setCoinPrice(prev => {
-                                if (prev === 0) return 0.0001;
-                                const change = prev * (Math.random() * 0.01 - 0.005);
+                                if (prev === 0) return 0.0001; // 初始基准价
+                                const change = prev * (Math.random() * 0.01 - 0.005); // +/- 0.5% 波动
                                 return Math.max(0.00000001, prev + change);
                             });
+                            setIsLivePrice(false); // 标记为 EST (估算/模拟)
                         }
                     }
                 };
@@ -2368,7 +2374,7 @@
                                                             let id = parts[1].split('/')[0];
                                                             id = id.split('?')[0]; // 去除查询参数
                                                             id = id.split('#')[0]; // 去除哈希
-                                                            val = id;
+                                                            val = id.trim(); // 去除首尾空格
                                                         }
                                                     } catch (err) {
                                                         // 解析失败则保留原值
