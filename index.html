@@ -1521,6 +1521,17 @@
                         {/* Header */}
                         <header className="flex flex-col md:flex-row justify-between mb-8 gap-6 items-start md:items-center">
                             <div>
+                                {/* Brand Logo & Title Row */}
+                                <div className="flex items-center gap-2 mb-1 animate-in fade-in slide-in-from-left-2">
+                                    <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#F0B90B]" fill="currentColor">
+                                        <path d="M12 0L9.56 2.44L12 4.88L14.44 2.44L12 0ZM4.88 7.12L2.44 9.56L0 12L2.44 14.44L4.88 16.88L7.32 14.44L4.88 12L7.32 9.56L4.88 7.12ZM19.12 7.12L16.68 9.56L19.12 12L16.68 14.44L19.12 16.88L21.56 14.44L24 12L21.56 9.56L19.12 7.12ZM12 9.12L9.12 12L12 14.88L14.88 12L12 9.12ZM12 19.12L9.56 21.56L12 24L14.44 21.56L12 19.12Z" />
+                                    </svg>
+                                    <div className="text-xs md:text-sm uppercase tracking-widest text-slate-500 dark:text-slate-400 leading-none flex items-baseline gap-1.5">
+                                        <span className="font-black text-slate-900 dark:text-white">Alpha</span>
+                                        <span className="font-light opacity-80">Trading Competition</span>
+                                    </div>
+                                </div>
+
                                 <div className="flex flex-wrap items-center gap-4">
                                     <button onClick={() => setShowCompModal(true)} className="text-3xl font-black flex items-center gap-3 text-slate-800 dark:text-white tracking-tight hover:opacity-80 transition-opacity group" title={t.switchCompetition}>
                                         <div className="relative">
