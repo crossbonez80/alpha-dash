@@ -1012,8 +1012,26 @@
                 setIsGeneratingStrategy(true); setError(null);
                 try {
                     const dataStr = chartData.map(d => `${d.displayDay}: Threshold $${d.volume}, My Volume $${d.userVolume}`).join(', ');
-                    const prompt = `You are an experienced trading competition coach... (prompt omitted)`;
-                    const result = await callGeminiAPI({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "object", properties: { marketPhase: { type: "string" }, riskLevel: { type: "string" }, analysis: { type: "string" }, actionableAdvice: { type: "array", items: { type: "string" } }, psychologicalTip: { type: "string" } }, required: ["marketPhase", "riskLevel", "analysis", "actionableAdvice", "psychologicalTip"] } } });
+                    // Use t.promptStrategy to dynamically select language based on current UI setting
+                    const prompt = `${t.promptStrategy}\n\nDataset:\n${dataStr}`;
+                    
+                    const result = await callGeminiAPI({ 
+                        contents: [{ parts: [{ text: prompt }] }], 
+                        generationConfig: { 
+                            responseMimeType: "application/json", 
+                            responseSchema: { 
+                                type: "object", 
+                                properties: { 
+                                    marketPhase: { type: "string" }, 
+                                    riskLevel: { type: "string" }, 
+                                    analysis: { type: "string" }, 
+                                    actionableAdvice: { type: "array", items: { type: "string" } }, 
+                                    psychologicalTip: { type: "string" } 
+                                }, 
+                                required: ["marketPhase", "riskLevel", "analysis", "actionableAdvice", "psychologicalTip"] 
+                            } 
+                        } 
+                    });
                     const strategyText = result.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (strategyText) { setAiStrategy(JSON.parse(strategyText)); setIsAICollapsed(false); }
                 } catch (e) { setError(e.message); } finally { setIsGeneratingStrategy(false); }
@@ -1139,7 +1157,7 @@
                                 <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-indigo-300 via-purple-400 to-indigo-400 shadow-sm dark:shadow-lg transition-all duration-300 group flex flex-col max-h-[350px] lg:max-h-[600px]">
                                     <div className="relative overflow-hidden bg-white dark:bg-[#0f101f]/90 backdrop-blur-md rounded-[23px] flex-1 flex flex-col">
                                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 dark:from-indigo-900/20 to-transparent opacity-50 pointer-events-none"></div>
-                                        <div className="absolute -right-4 -top-4 opacity-[0.15] group-hover:opacity-[0.25] transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-12 pointer-events-none"><Icon name="history" size={120} className="text-indigo-500 dark:text-indigo-300" /></div>
+                                        <div className="absolute -right-4 -top-4 opacity-[0.15] group-hover:opacity-[0.25] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 pointer-events-none"><Icon name="history" size={120} className="text-indigo-600 dark:text-indigo-300" /></div>
                                         <div className="relative z-10 p-4 border-b border-indigo-100 dark:border-indigo-500/20 bg-white/50 dark:bg-slate-900/20 backdrop-blur-sm">
                                             <div className="flex justify-between items-center mb-2">
                                                 <div className="flex items-center gap-3"><div className="relative"><div className="absolute inset-0 rounded-xl animate-pulse-ring bg-indigo-500"></div><div className="relative z-10 w-8 h-8 rounded-xl border flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20"><Icon name="list" size={18} /></div></div><div className="text-indigo-900/70 dark:text-indigo-200/70 text-xs font-bold uppercase tracking-widest">{t.historySnapshot}</div></div>
