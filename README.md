@@ -1,111 +1,43 @@
-AlphaDash - Trading Competition Analytics Terminal
+AlphaDash ⚡️
 
-AlphaDash is a sophisticated, data-driven dashboard designed to help traders track, analyze, and optimize their performance in trading competitions. Built with a local-first architecture, it runs entirely in your browser, ensuring your data remains private while providing powerful insights.
+A privacy-focused, local-first analytics terminal for trading competitions.
 
-✨ Key Features
+AlphaDash helps traders track leaderboard thresholds, analyze performance trends, and formulate strategies using AI—all running directly in your browser.
 
-Real-time Dashboard:
+🚀 Key Features
 
-Live Status: Instantly see if your volume is "Safe" (leading the threshold) or "At Risk" (lagging).
+📊 Real-time Dashboard: Monitor thresholds, calculated gaps, and estimated rewards instantly.
 
-Threshold Tracking: Monitor the current leaderboard cutoff volume.
+🤖 AI-Powered:
 
-Reward Estimation: Calculate estimated rewards based on live token prices (CoinGecko integration).
+Screenshot Recognition: Upload leaderboard screenshots to auto-extract data.
 
-Predictions: AI-assisted prediction for the next day's volume target based on linear trends.
+Strategy Insights: Get AI-generated risk assessments and advice.
 
-Countdown: Visual countdown timer for competition start and end times.
+📉 Smart Prediction: Linear trend forecasting for next-day targets.
 
-AI Integration (Gemini-Powered):
+🔒 Local-First: No server required. All data and API keys live in your browser's LocalStorage.
 
-Screenshot Recognition: Upload a screenshot of a leaderboard, and the AI will automatically extract volume, rank, and date data.
+🎨 Customizable: Dark/Light modes, multi-language (EN/CN), and custom competition tracks.
 
-Strategy Insights: Generate personalized trading strategies, risk assessments, and actionable advice based on your historical data.
+🛠️ Quick Start
 
-Data Management:
+Download: Get the UserVolumeMonitor.html file from this repository.
 
-Multi-Track Support: Manage multiple competitions (e.g., Midnight, Bitcoin, Solana) with customizable themes and icons.
+Run: Open the file directly in Chrome, Edge, or Safari.
 
-History Snapshots: Detailed daily records with visual safe/risk indicators.
+Configure:
 
-Manual Entry: Easy-to-use interface for manually logging your daily volume and costs.
+Click Settings to add your Google Gemini API Key (for AI features).
 
-Import/Export: Backup your data to JSON or restore it on another device.
+Click the Competition Title to manage or switch tracks.
 
-User Experience:
+💻 Tech Stack
 
-Responsive Design: Fully optimized for both desktop and mobile devices.
+React 18 & Tailwind CSS (via CDN)
 
-Theme Support: Seamless switching between Dark and Light modes.
+Recharts & Lucide Icons
 
-Multi-Language: Native support for English and Chinese (CN).
-
-Privacy Focused: All API keys and competition data are stored locally in your browser's LocalStorage.
-
-🚀 Getting Started
-
-Prerequisites
-
-A modern web browser (Chrome, Edge, Safari, Firefox).
-
-(Optional) A Google Gemini API Key for AI features.
-
-Installation
-
-AlphaDash is a single-file HTML application. No complex build process is required.
-
-Download the UserVolumeMonitor.html file.
-
-Open the file directly in your web browser.
-
-Setting Up AI Features
-
-To use the Screenshot Recognition and Strategy Insight features:
-
-Click the Settings (gear icon) in the top right corner.
-
-Enter your Google Gemini API Key.
-
-Click Save Settings.
-
-📖 Usage Guide
-
-1. Managing Competitions
-
-Click the competition name (e.g., "NIGHT DASHBOARD") in the header to open the switch menu.
-
-Use the "+" button to add a new competition track.
-
-Customize the symbol, dates, and color theme.
-
-2. Logging Data
-
-Manual: Click the "Manual Input" button in the History card. Enter the date, threshold volume, and your volume.
-
-AI Scan: Click the "Screenshot" button (camera icon) and upload an image of the leaderboard. The AI will parse the data for you.
-
-3. Analyzing Performance
-
-View the Market Intelligence HUB for a visual curve of the threshold vs. your volume.
-
-Click "AI Analysis" to get a generated report on the current market phase and suggested strategies.
-
-🛠 Technologies Used
-
-React 18: UI Component library.
-
-Tailwind CSS: Utility-first styling.
-
-Recharts: Data visualization.
-
-Lucide React: Iconography.
-
-Google Gemini API: AI capabilities (Vision & Text).
-
-CoinGecko API: Real-time crypto pricing.
-
-📄 License
-
-This project is open-source. Feel free to modify and distribute it for personal use.
+Google Gemini API & CoinGecko API
 
 Developed with ❤️ for the trading community.
