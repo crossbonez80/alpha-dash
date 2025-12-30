@@ -103,16 +103,6 @@
             animation: shimmer 3s infinite linear; 
         }
 
-        /* Scan Line Animation for AI Button */
-        @keyframes scan-line {
-            0% { transform: translateY(-100%); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(200%); opacity: 0; }
-        }
-        .animate-scan {
-            animation: scan-line 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-
         /* Text Flow Animation for AI Loading */
         @keyframes textFlow {
             0% { background-position: 0% 50%; }
@@ -249,7 +239,7 @@
 
         // --- Core Components ---
 
-        // Reusable Modal Component with customizable width and high z-index
+        // Reusable Modal Component
         const Modal = ({ isOpen, onClose, title, children, maxWidth = "max-w-lg" }) => {
             if (!isOpen) return null;
             return (
@@ -289,12 +279,6 @@
                                 <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                     ${payload[1].value.toLocaleString()}
                                 </span>
-                            </div>
-                        )}
-                        {payload[1] && (
-                            <div className={`mt-3 pt-2 border-t border-slate-100 dark:border-white/10 text-xs font-bold flex justify-between ${payload[1].value >= payload[0].value ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'}`}>
-                                <span>{payload[1].value >= payload[0].value ? t.statusSafe : t.statusRisk}</span>
-                                <span>{payload[1].value >= payload[0].value ? '+' : ''}{((payload[1].value - payload[0].value) / payload[0].value * 100).toFixed(1)}%</span>
                             </div>
                         )}
                     </div>
@@ -404,29 +388,19 @@
             </div>
         );
 
-        // Renamed from GrowthCard to PriceCard, uses stats.priceChange (passed via props) instead of threshold growth
         const PriceCard = ({ coinPrice, priceChange, t, currentComp }) => {
-            // Determine styling based on positive/negative change
             const isPositive = priceChange >= 0;
-            
-            // Wrapper Gradient (Border effect)
             const gradientClass = isPositive 
                 ? 'from-emerald-300 via-green-400 to-teal-400 dark:from-emerald-500 dark:via-green-500 dark:to-teal-500' 
                 : 'from-rose-300 via-red-400 to-orange-400 dark:from-rose-500 dark:via-red-500 dark:to-orange-500';
-            
-            // Background: Light (Pale Gradient) vs Dark (Dark Solid)
             const bgClass = isPositive 
                 ? 'bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:bg-none dark:bg-[#0f172a]' 
                 : 'bg-gradient-to-br from-rose-50 via-red-50 to-orange-50 dark:bg-none dark:bg-[#0f172a]';
-            
-            // Text Colors: Light (Dark Text) vs Dark (White Text)
             const labelColor = isPositive ? 'text-emerald-900/70 dark:text-slate-400' : 'text-rose-900/70 dark:text-slate-400';
             const dollarColor = 'text-slate-900/70 dark:text-white/50';
             const valueColor = 'text-slate-900 dark:text-white';
             const trendColor = isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400';
             const subTextColor = isPositive ? 'text-emerald-800/60 dark:text-slate-400' : 'text-rose-800/60 dark:text-slate-400';
-            
-            // Icon Colors
             const iconWatermarkColor = isPositive ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500';
             const ringColor = isPositive ? 'bg-emerald-500' : 'bg-rose-500';
             const iconBg = isPositive
@@ -439,10 +413,7 @@
                         <div className="absolute top-3 right-3 z-20 opacity-30 group-hover:opacity-100 transition-opacity duration-200 cursor-grab active:cursor-grabbing">
                             <Icon name="grip-horizontal" size={20} className="text-slate-400 dark:text-slate-600" />
                         </div>
-                        
-                        {/* Subtle background glow based on trend (Dark mode only) */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${isPositive ? 'dark:from-emerald-500/10' : 'dark:from-rose-500/10'} to-transparent opacity-0 dark:opacity-100`}></div>
-                        
                         <div className={`absolute -right-4 -top-4 opacity-[0.15] group-hover:opacity-[0.25] transition-all duration-500 transform group-hover:scale-110 group-active:scale-125 group-hover:-rotate-12 group-active:-rotate-12 ${iconWatermarkColor}`}>
                             <Icon name="activity" size={120} />
                         </div>
@@ -509,7 +480,6 @@
                     const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((difference % (1000 * 60)) / 1000); 
-
                     const secProgress = (currentSeconds / 60) * 100;
 
                     setTimeLeft({ days, hours, minutes, seconds, status, progress: secProgress });
@@ -520,34 +490,20 @@
                 return () => clearInterval(timer);
             }, [startDate, endDate]);
 
-            const statusColors = {
-                startsIn: 'text-indigo-700 dark:text-indigo-400',
-                endsIn: 'text-cyan-700 dark:text-cyan-400',
-                ended: 'text-slate-500 dark:text-slate-500',
-                noData: 'text-slate-400 dark:text-slate-500'
-            };
-            
-            const pulseColors = {
-                startsIn: 'bg-indigo-500',
-                endsIn: 'bg-cyan-500',
-                ended: 'bg-slate-400',
-                noData: 'bg-slate-400'
-            };
-
+            const statusColors = { startsIn: 'text-indigo-700 dark:text-indigo-400', endsIn: 'text-cyan-700 dark:text-cyan-400', ended: 'text-slate-500 dark:text-slate-500', noData: 'text-slate-400 dark:text-slate-500' };
+            const pulseColors = { startsIn: 'bg-indigo-500', endsIn: 'bg-cyan-500', ended: 'bg-slate-400', noData: 'bg-slate-400' };
             const borderGradients = {
                 startsIn: 'from-indigo-300 via-purple-400 to-indigo-400',
                 endsIn: 'from-cyan-300 via-blue-400 to-indigo-400',
                 ended: 'from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700',
                 noData: 'from-slate-200 via-slate-300 to-slate-400 dark:from-slate-700 dark:via-slate-600 dark:to-slate-700'
             };
-
             const bgClass = {
                 startsIn: 'bg-gradient-to-br from-indigo-50 via-purple-50 to-indigo-50 dark:bg-none',
                 endsIn: 'bg-gradient-to-br from-cyan-50 via-blue-50 to-indigo-50 dark:bg-none',
                 ended: 'bg-gradient-to-br from-slate-50 to-slate-100 dark:bg-none',
                 noData: 'bg-slate-50 dark:bg-none'
             };
-
             const totalPixels = 40; 
             const activePixels = Math.floor((timeLeft.progress / 100) * totalPixels);
 
@@ -574,7 +530,6 @@
                                     <div className="text-[10px] font-bold opacity-60 text-slate-700 dark:text-white">{symbol}</div>
                                 </div>
                             </div>
-                            
                             {timeLeft.status === 'ended' ? (
                                 <div className="text-3xl font-extrabold tracking-tight drop-shadow-sm dark:drop-shadow-lg text-slate-500 dark:text-slate-400 mb-3">{t.ended}</div>
                             ) : (
@@ -587,7 +542,6 @@
                                     <span className="text-xs font-bold uppercase mr-1 opacity-80">m</span>
                                 </div>
                             )}
-
                             <div className="mt-auto">
                                 {timeLeft.status !== 'ended' && timeLeft.status !== 'noData' && (
                                     <div className="relative">
@@ -620,7 +574,12 @@
         // --- Pixel Chart Component ---
         const PixelChart = ({ data, t }) => {
             const [hoveredItem, setHoveredItem] = useState(null);
-            if (!data || data.length === 0) return null;
+            if (!data || data.length === 0) return (
+                <div className="w-full h-full flex flex-col items-center justify-center opacity-50">
+                    <Icon name="bar-chart-2" size={48} className="text-slate-300 dark:text-slate-700 mb-2" />
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-600">No Data Available</span>
+                </div>
+            );
             const maxVol = Math.max(...data.map(d => Math.max(d.volume, d.userVolume || 0))) * 1.2;
             const gridRows = 20; 
 
@@ -686,12 +645,19 @@
             );
         };
 
-        // Default Config
+        // Default Config - CLEAN SLATE
         const defaultCompetitions = [
-            { id: 'night', name: 'Midnight', symbol: 'NIGHT', coingeckoId: 'midnight-3', color: 'indigo', icon: 'moon', gradient: 'from-indigo-500 to-purple-600', startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0] },
-            { id: 'btc', name: 'Bitcoin', symbol: 'BTC', coingeckoId: 'bitcoin', color: 'orange', icon: 'bitcoin', gradient: 'from-orange-500 to-amber-500', startDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0], endDate: new Date(Date.now() + 86400000 * 16).toISOString().split('T')[0] },
-            { id: 'eth', name: 'Ethereum', symbol: 'ETH', coingeckoId: 'ethereum', color: 'blue', icon: 'zap', gradient: 'from-blue-500 to-cyan-500', startDate: new Date(Date.now() - 86400000 * 3).toISOString().split('T')[0], endDate: new Date(Date.now() + 86400000 * 11).toISOString().split('T')[0] },
-            { id: 'sol', name: 'Solana', symbol: 'SOL', coingeckoId: 'solana', color: 'emerald', icon: 'layers', gradient: 'from-emerald-400 to-teal-500', startDate: new Date(Date.now() + 86400000 * 5).toISOString().split('T')[0], endDate: new Date(Date.now() + 86400000 * 12).toISOString().split('T')[0] }
+            { 
+                id: 'token', 
+                name: 'Token Name', 
+                symbol: 'TOKEN', 
+                coingeckoId: '', 
+                color: 'indigo', 
+                icon: 'coins', 
+                gradient: 'from-indigo-500 to-purple-600', 
+                startDate: new Date().toISOString().split('T')[0], 
+                endDate: new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0] 
+            }
         ];
 
         const colorOptions = [
@@ -705,20 +671,18 @@
             { id: 'fuchsia', label: 'Fuchsia', gradient: 'from-fuchsia-500 to-pink-600', icon: 'crown' }
         ];
 
+        // Initial Data Map - EMPTY
         const initialDataMap = {
-            night: [
-                { id: 'init-1', volume: 36129.54, userVolume: 42000.00, timestamp: new Date(Date.now() - 172800000).toISOString(), source: 'default', reward: 1700, eligibility: 20500 },
-                { id: 'init-2', volume: 60689.17, userVolume: 58000.00, timestamp: new Date(Date.now() - 86400000).toISOString(), source: 'default', reward: 1700, eligibility: 20500 },
-            ],
+            token: []
         };
 
         const translations = {
             zh: {
-                subtitle: "数据驱动的交易赛入榜门槛预测系统", manualEntry: "手动输入", importScreenshot: "截图识别", analyzing: "AI 识别中...", currentThreshold: "当前入榜门槛", liveUpdate: "实时更新", growthRate: "24H 变动", vsYesterday: "较昨日同期", predictedNext: "明日预测目标", linearTrend: "基于线性趋势", rewardEst: "单号奖励估值 (USD)", rewardNote: "(按实时币价)", historySnapshot: "历史快照", growthCurve: "门槛与个人交易量趋势", aiAnalysis: "AI 深度策略预测", aiAnalyzing: "AI 分析中...", manualModalTitle: "手动录入", dateLabel: "日期", volumeLabel: "入榜门槛交易量 (USD)", userVolumeLabel: "您的交易量 (USD)", costLabel: "今日交易成本 (USD)", rewardLabel: "奖励数量 - 可选", eligibilityLabel: "合格名次 (如 20500)", confirmButton: "确认录入", aiPhase: "阶段", aiRisk: "风险评级", geminiInsight: "Gemini 赛项深度洞察", day: "Day", priceLive: "LIVE", priceEst: "EST", sourceAI: "AI", sourceMan: "人工", delete: "删除", edit: "编辑", errorTrend: "需要至少两条历史数据进行趋势预测", errorRecognize: "AI 未能识别内容", errorValid: "识别结果不是有效数字", promptStrategy: "你是一个专业的交易比赛分析师。请用中文回答。分析当前市场竞争阶段（如：早期积累、中期拉升、冲刺阶段）和风险等级（低、中、高）。并给出针对性的冲榜策略建议（简短有力，100字以内）。根据以下历史入榜门槛数据序列：", switchCompetition: "切换交易赛", selectCompetition: "选择要分析的币种赛道", addCompetition: "添加新赛道", editCompetition: "编辑赛道", compName: "币种名称 (如 Bitcoin)", compSymbol: "代币符号 (如 BTC)", compCgId: "CoinGecko ID / URL (用于价格)", compColor: "主题颜色", save: "保存配置", cancel: "取消", deleteConfirmTitle: "确认删除", deleteConfirmDesc: "确定要删除这个赛道吗？所有相关的历史数据都将永久丢失且无法恢复。", confirmDelete: "确认删除", cgIdHint: "在 coingecko.com 网址中找到，例如 'bitcoin'", gap: "差距", statusSafe: "安全", statusRisk: "危险", legendThreshold: "入榜门槛", legendUser: "您的交易量", statusTitle: "当前状态", lead: "领先门槛", lag: "落后门槛", themeLight: "亮色", themeDark: "暗色", settings: "设置", apiKeyLabel: "Gemini API Keys (支持多Key轮询)", apiKeyPlaceholder: "在此粘贴 API Key", saveKey: "保存设置", clearKey: "清除所有", apiKeyHint: "系统会自动使用第一个可用的 API Key。如果主 Key 失效，会自动切换到备用 Key。Key 仅保存在本地。", errorApiKey: "未检测到有效的 API Key。请在设置中输入您的 Gemini API Key 以使用 AI 功能。", cardCountdown: "比赛倒计时", startsIn: "距离开始", endsIn: "距离结束", ended: "已结束", periodLabel: "比赛周期 (官方 UTC+8 标准)", startLabel: "开始时间", endLabel: "结束时间", subCardReward: "单号代币", subCardRank: "入围名次", hourLabel: "时", minuteLabel: "分", key1Label: "主 API Key", key2Label: "备用 Key 1", key3Label: "备用 Key 2", developer: "开发者", about: "关于", donation: "捐赠", aboutTitle: "关于 AlphaDash", aboutDesc: "AlphaDash 是一个专为交易赛设计的辅助分析工具，旨在帮助用户追踪排名门槛、分析数据趋势并制定冲榜策略。本工具完全运行在本地浏览器中，您的 API Key 和数据均存储在本地 LocalStorage，不会上传至任何服务器。", donationTitle: "支持开发者", donationDesc: "如果您觉得这个工具对您有帮助，欢迎打赏支持后续开发！", copy: "复制", copied: "已复制", followX: "关注 X", version: "版本 v10.6", dataMgmt: "数据管理", exportData: "导出备份", importData: "导入恢复", importConfirm: "确定要导入数据吗？这将覆盖当前的赛道配置和历史记录。", importSuccess: "数据恢复成功！",
+                subtitle: "数据驱动的交易赛入榜门槛预测系统", manualEntry: "手动输入", importScreenshot: "截图识别", analyzing: "AI 识别中...", currentThreshold: "当前入榜门槛", liveUpdate: "实时更新", growthRate: "24H 变动", vsYesterday: "较昨日同期", predictedNext: "明日预测目标", linearTrend: "基于线性趋势", rewardEst: "单号奖励估值 (USD)", rewardNote: "(按实时币价)", historySnapshot: "历史快照", growthCurve: "门槛与个人交易量趋势", aiAnalysis: "AI 深度策略预测", aiAnalyzing: "AI 分析中...", manualModalTitle: "手动录入", dateLabel: "日期", volumeLabel: "入榜门槛交易量 (USD)", userVolumeLabel: "您的交易量 (USD)", costLabel: "今日交易成本 (USD)", rewardLabel: "奖励数量 - 可选", eligibilityLabel: "合格名次 (如 20500)", confirmButton: "确认录入", aiPhase: "阶段", aiRisk: "风险评级", geminiInsight: "Gemini 赛项深度洞察", day: "Day", priceLive: "LIVE", priceEst: "EST", sourceAI: "AI", sourceMan: "人工", delete: "删除", edit: "编辑", errorTrend: "需要至少两条历史数据进行趋势预测", errorRecognize: "AI 未能识别内容", errorValid: "识别结果不是有效数字", promptStrategy: "你是一个专业的交易比赛分析师。请用中文回答。分析当前市场竞争阶段（如：早期积累、中期拉升、冲刺阶段）和风险等级（低、中、高）。并给出针对性的冲榜策略建议（简短有力，100字以内）。根据以下历史入榜门槛数据序列：", switchCompetition: "切换交易赛", selectCompetition: "选择要分析的币种赛道", addCompetition: "添加新赛道", editCompetition: "编辑赛道", compName: "币种名称 (如 Token)", compSymbol: "代币符号 (如 TKN)", compCgId: "CoinGecko ID / URL (用于价格)", compColor: "主题颜色", save: "保存配置", cancel: "取消", deleteConfirmTitle: "确认删除", deleteConfirmDesc: "确定要删除这个赛道吗？所有相关的历史数据都将永久丢失且无法恢复。", confirmDelete: "确认删除", cgIdHint: "在 coingecko.com 网址中找到，例如 'bitcoin'", gap: "差距", statusSafe: "安全", statusRisk: "危险", legendThreshold: "入榜门槛", legendUser: "您的交易量", statusTitle: "当前状态", lead: "领先门槛", lag: "落后门槛", themeLight: "亮色", themeDark: "暗色", settings: "设置", apiKeyLabel: "Gemini API Keys (支持多Key轮询)", apiKeyPlaceholder: "在此粘贴 API Key", saveKey: "保存设置", clearKey: "清除所有", apiKeyHint: "系统会自动使用第一个可用的 API Key。如果主 Key 失效，会自动切换到备用 Key。Key 仅保存在本地。", errorApiKey: "未检测到有效的 API Key。请在设置中输入您的 Gemini API Key 以使用 AI 功能。", cardCountdown: "比赛倒计时", startsIn: "距离开始", endsIn: "距离结束", ended: "已结束", periodLabel: "比赛周期 (官方 UTC+8 标准)", startLabel: "开始时间", endLabel: "结束时间", subCardReward: "单号代币", subCardRank: "入围名次", hourLabel: "时", minuteLabel: "分", key1Label: "主 API Key", key2Label: "备用 Key 1", key3Label: "备用 Key 2", developer: "开发者", about: "关于", donation: "捐赠", aboutTitle: "关于 AlphaDash", aboutDesc: "AlphaDash 是一个专为交易赛设计的辅助分析工具，旨在帮助用户追踪排名门槛、分析数据趋势并制定冲榜策略。本工具完全运行在本地浏览器中，您的 API Key 和数据均存储在本地 LocalStorage，不会上传至任何服务器。", donationTitle: "支持开发者", donationDesc: "如果您觉得这个工具对您有帮助，欢迎打赏支持后续开发！", copy: "复制", copied: "已复制", followX: "关注 X", version: "版本 v11.0", dataMgmt: "数据管理", exportData: "导出备份", importData: "导入恢复", importConfirm: "确定要导入数据吗？这将覆盖当前的赛道配置和历史记录。", importSuccess: "数据恢复成功！",
                 realTimePrice: "实时币价 (USD)", priceChange: "24H 涨跌幅", marketIntelTitle: "市场情报", hub: "中心", analysis: "AI 深度分析", visitorCount: "今日访问热度", legendTotalVolume: "总交易量"
             },
             en: {
-                subtitle: "Data-driven Competition Threshold Prediction System", manualEntry: "Entry", importScreenshot: "Scan", analyzing: "Scanning...", currentThreshold: "Current Threshold", liveUpdate: "Live Update", growthRate: "24H Change", vsYesterday: "vs Yesterday", predictedNext: "Next Day Target", linearTrend: "Linear Trend Based", rewardEst: "Est. Reward Value (USD)", rewardNote: "(Live Price)", historySnapshot: "History Snapshots", growthCurve: "Threshold vs User Volume", aiAnalysis: "AI Strategy Insight", aiAnalyzing: "Analyzing...", manualModalTitle: "Manual Entry", dateLabel: "Date", volumeLabel: "Threshold Volume (USD)", userVolumeLabel: "Your Volume (USD)", costLabel: "Today's Cost (USD)", rewardLabel: "Reward Amount - Optional", eligibilityLabel: "Eligibility Rank (e.g. 20500)", confirmButton: "Confirm Entry", aiPhase: "Phase", aiRisk: "Risk Level", geminiInsight: "Gemini Competition Insight", day: "Day", priceLive: "LIVE", priceEst: "EST", sourceAI: "AI", sourceMan: "MANUAL", delete: "Delete", edit: "Edit", errorTrend: "Need at least 2 data points for prediction", errorRecognize: "AI failed to recognize content", errorValid: "Result is not a valid number", promptStrategy: "You are a professional trading competition analyst. Please respond in English. Analyze current market phase (e.g. Accumulation, Surge, Final Sprint) and Risk Level (Low, Medium, High). Give specific strategy advice (short and concise, under 100 words). Based on the following historical threshold data sequence:", switchCompetition: "Switch Competition", selectCompetition: "Select Competition Track", addCompetition: "Add New Track", editCompetition: "Edit Track", compName: "Coin Name (e.g. Bitcoin)", compSymbol: "Token Symbol (e.g. BTC)", compCgId: "CoinGecko ID / URL (for price)", compColor: "Theme Color", save: "Save Configuration", cancel: "Cancel", deleteConfirmTitle: "Confirm Deletion", deleteConfirmDesc: "Are you sure you want to delete this track? All historical data associated with it will be permanently lost.", confirmDelete: "Delete Track", cgIdHint: "Find in coingecko.com URL, e.g. 'bitcoin'", gap: "Gap", statusSafe: "Safe", statusRisk: "Risk", legendThreshold: "Threshold", legendUser: "Your Volume", statusTitle: "Current Status", lead: "Leading Threshold", lag: "Trailing Threshold", themeLight: "Light", themeDark: "Dark", settings: "Settings", apiKeyLabel: "Gemini API Keys (Multi-key Failover)", apiKeyPlaceholder: "Paste API Key here", saveKey: "Save Settings", clearKey: "Clear All", apiKeyHint: "System automatically uses the first available key and switches to backup keys if quota is exceeded.", errorApiKey: "No valid API Key found. Please enter at least one Gemini API Key in Settings.", cardCountdown: "Time Remaining", startsIn: "Starts In", endsIn: "Ends In", ended: "Ended", periodLabel: "Competition Period (UTC+8 Standard)", startLabel: "Start Date", endLabel: "End Date", subCardReward: "Tokens/User", subCardRank: "Rank Limit", hourLabel: "Hr", minuteLabel: "Min", key1Label: "Primary Key", key2Label: "Backup Key 1", key3Label: "Backup Key 2", developer: "Developer", about: "About", donation: "Donate", aboutTitle: "About AlphaDash", aboutDesc: "AlphaDash is an analytical tool designed for trading competitions, helping users track threshold volumes, analyze trends, and formulate strategies. This tool runs entirely in your local browser. Your API Keys and data are stored locally in LocalStorage and are never uploaded to any server.", donationTitle: "Support Development", donationDesc: "If you find this tool helpful, please consider donating to support future development!", copy: "Copy", copied: "Copied", followX: "Follow X", version: "Version v10.6", dataMgmt: "Data Management", exportData: "Export Backup (JSON)", importData: "Import Backup (JSON)", importConfirm: "Are you sure you want to import data? This will overwrite current tracks and history.", importSuccess: "Data restored successfully!",
+                subtitle: "Data-driven Competition Threshold Prediction System", manualEntry: "Entry", importScreenshot: "Scan", analyzing: "Scanning...", currentThreshold: "Current Threshold", liveUpdate: "Live Update", growthRate: "24H Change", vsYesterday: "vs Yesterday", predictedNext: "Next Day Target", linearTrend: "Linear Trend Based", rewardEst: "Est. Reward Value (USD)", rewardNote: "(Live Price)", historySnapshot: "History Snapshots", growthCurve: "Threshold vs User Volume", aiAnalysis: "AI Strategy Insight", aiAnalyzing: "Analyzing...", manualModalTitle: "Manual Entry", dateLabel: "Date", volumeLabel: "Threshold Volume (USD)", userVolumeLabel: "Your Volume (USD)", costLabel: "Today's Cost (USD)", rewardLabel: "Reward Amount - Optional", eligibilityLabel: "Eligibility Rank (e.g. 20500)", confirmButton: "Confirm Entry", aiPhase: "Phase", aiRisk: "Risk Level", geminiInsight: "Gemini Competition Insight", day: "Day", priceLive: "LIVE", priceEst: "EST", sourceAI: "AI", sourceMan: "MANUAL", delete: "Delete", edit: "Edit", errorTrend: "Need at least 2 data points for prediction", errorRecognize: "AI failed to recognize content", errorValid: "Result is not a valid number", promptStrategy: "You are a professional trading competition analyst. Please respond in English. Analyze current market phase (e.g. Accumulation, Surge, Final Sprint) and Risk Level (Low, Medium, High). Give specific strategy advice (short and concise, under 100 words). Based on the following historical threshold data sequence:", switchCompetition: "Switch Competition", selectCompetition: "Select Competition Track", addCompetition: "Add New Track", editCompetition: "Edit Track", compName: "Coin Name (e.g. Token)", compSymbol: "Token Symbol (e.g. TKN)", compCgId: "CoinGecko ID / URL (for price)", compColor: "Theme Color", save: "Save Configuration", cancel: "Cancel", deleteConfirmTitle: "Confirm Deletion", deleteConfirmDesc: "Are you sure you want to delete this track? All historical data associated with it will be permanently lost.", confirmDelete: "Delete Track", cgIdHint: "Find in coingecko.com URL, e.g. 'bitcoin'", gap: "Gap", statusSafe: "Safe", statusRisk: "Risk", legendThreshold: "Threshold", legendUser: "Your Volume", statusTitle: "Current Status", lead: "Leading Threshold", lag: "Trailing Threshold", themeLight: "Light", themeDark: "Dark", settings: "Settings", apiKeyLabel: "Gemini API Keys (Multi-key Failover)", apiKeyPlaceholder: "Paste API Key here", saveKey: "Save Settings", clearKey: "Clear All", apiKeyHint: "System automatically uses the first available key and switches to backup keys if quota is exceeded.", errorApiKey: "No valid API Key found. Please enter at least one Gemini API Key in Settings.", cardCountdown: "Time Remaining", startsIn: "Starts In", endsIn: "Ends In", ended: "Ended", periodLabel: "Competition Period (UTC+8 Standard)", startLabel: "Start Date", endLabel: "End Date", subCardReward: "Tokens/User", subCardRank: "Rank Limit", hourLabel: "Hr", minuteLabel: "Min", key1Label: "Primary Key", key2Label: "Backup Key 1", key3Label: "Backup Key 2", developer: "Developer", about: "About", donation: "Donate", aboutTitle: "About AlphaDash", aboutDesc: "AlphaDash is an analytical tool designed for trading competitions, helping users track threshold volumes, analyze trends, and formulate strategies. This tool runs entirely in your local browser. Your API Keys and data are stored locally in LocalStorage and are never uploaded to any server.", donationTitle: "Support Development", donationDesc: "If you find this tool helpful, please consider donating to support future development!", copy: "Copy", copied: "Copied", followX: "Follow X", version: "Version v11.0", dataMgmt: "Data Management", exportData: "Export Backup (JSON)", importData: "Import Backup (JSON)", importConfirm: "Are you sure you want to import data? This will overwrite current tracks and history.", importSuccess: "Data restored successfully!",
                 realTimePrice: "Live Price (USD)", priceChange: "24H Change", marketIntelTitle: "Market Intelligence", hub: "HUB", analysis: "AI Analysis", visitorCount: "Daily Activity", legendTotalVolume: "Total Volume"
             }
         };
@@ -730,41 +694,29 @@
             const t = translations[lang];
             
             // Visitor Counter Logic (Persistent Simulation)
-            // This creates a "Real-feeling" counter that persists across reloads and simulates growth while away
             const [visitorCount, setVisitorCount] = useState(() => {
                 const savedCount = localStorage.getItem('alpha_dash_visitors');
                 const lastTime = localStorage.getItem('alpha_dash_last_time');
                 const now = Date.now();
-                
-                // Base starting point: 12,540
                 let count = 12540;
-                
                 if (savedCount && lastTime) {
                     count = parseInt(savedCount, 10);
-                    // Simulate growth while away: approx 1 visitor every 15 seconds
                     const timeDiff = now - parseInt(lastTime, 10);
                     const growthWhileAway = Math.floor(timeDiff / 15000);
                     count += growthWhileAway;
                 } else {
-                    // First time load: Add some random variance
                     count += Math.floor(Math.random() * 500);
                 }
-                
                 return count;
             });
 
             useEffect(() => {
-                // Update storage immediately on mount
                 localStorage.setItem('alpha_dash_visitors', visitorCount);
                 localStorage.setItem('alpha_dash_last_time', Date.now());
-
                 const interval = setInterval(() => {
                     setVisitorCount(prev => {
-                        // Random increment: 40% chance to add 1 visitor every 3 seconds
-                        // This creates a natural "live" feeling without growing too fast
                         const shouldIncrement = Math.random() > 0.6; 
                         const next = shouldIncrement ? prev + 1 : prev;
-                        
                         if (shouldIncrement) {
                             localStorage.setItem('alpha_dash_visitors', next);
                             localStorage.setItem('alpha_dash_last_time', Date.now());
@@ -784,7 +736,6 @@
             useEffect(() => {
                 const root = window.document.documentElement;
                 const metaThemeColor = document.querySelector("meta[name=theme-color]");
-                
                 if (theme === 'dark') {
                     root.classList.add('dark');
                     document.body.classList.add('dark');
@@ -798,7 +749,10 @@
 
             const [competitions, setCompetitions] = useState(() => {
                 const saved = localStorage.getItem('night_competitions');
-                return saved ? JSON.parse(saved) : defaultCompetitions;
+                // Force reset to default if the saved competition is from an older version (has night/btc as default)
+                // This ensures "clean slate" on first load of v11.0
+                const isClean = saved && JSON.parse(saved).some(c => c.id === 'token');
+                return (saved && isClean) ? JSON.parse(saved) : defaultCompetitions;
             });
 
             useEffect(() => {
@@ -807,8 +761,8 @@
 
             const [currentComp, setCurrentComp] = useState(competitions[0]);
             const [dataList, setDataList] = useState(() => {
-                const savedData = localStorage.getItem(`night_data_${defaultCompetitions[0].id}`);
-                return savedData ? JSON.parse(savedData) : initialDataMap[defaultCompetitions[0].id];
+                const savedData = localStorage.getItem(`night_data_${currentComp.id}`);
+                return savedData ? JSON.parse(savedData) : (initialDataMap[currentComp.id] || []);
             });
 
             const [showCompModal, setShowCompModal] = useState(false);
@@ -818,9 +772,7 @@
             const [aiStrategy, setAiStrategy] = useState(null);
             const [error, setError] = useState(null);
             
-            // New state to track which item is being edited
             const [editingItem, setEditingItem] = useState(null);
-            // State to control visibility of period inputs
             const [showPeriodInputs, setShowPeriodInputs] = useState(true);
             
             const [manualVolume, setManualVolume] = useState('');
@@ -864,7 +816,7 @@
             const [tempKeys, setTempKeys] = useState(['', '', '']); 
 
             const [coinPrice, setCoinPrice] = useState(0); 
-            const [priceChange, setPriceChange] = useState(0); // New state for 24h change
+            const [priceChange, setPriceChange] = useState(0); 
             const [isLivePrice, setIsLivePrice] = useState(false);
 
             useEffect(() => {
@@ -901,21 +853,19 @@
                 const fetchPrice = async () => {
                     if (!currentComp.coingeckoId) return;
                     try {
-                        // Added include_24hr_change=true to fetch price change percentage
                         const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${currentComp.coingeckoId}&vs_currencies=usd&include_24hr_change=true`);
                         if (response.ok) {
                             const data = await response.json();
                             if (isMounted && data[currentComp.coingeckoId] && data[currentComp.coingeckoId].usd) {
                                 setCoinPrice(data[currentComp.coingeckoId].usd);
-                                setPriceChange(data[currentComp.coingeckoId].usd_24h_change || 0); // Update change state
+                                setPriceChange(data[currentComp.coingeckoId].usd_24h_change || 0); 
                                 setIsLivePrice(true);
                             } else { throw new Error("No price data found"); }
                         } else { if (isMounted) setIsLivePrice(false); throw new Error("API Limit"); }
                     } catch (e) {
                         if (isMounted) {
-                            // Mock fluctuation for demo if API fails
                             setCoinPrice(prev => { if (prev === 0) return 0.0001; const change = prev * (Math.random() * 0.01 - 0.005); return Math.max(0.00000001, prev + change); });
-                            setPriceChange(prev => prev + (Math.random() * 0.5 - 0.25)); // Mock small change
+                            setPriceChange(prev => prev + (Math.random() * 0.5 - 0.25)); 
                             setIsLivePrice(false);
                         }
                     }
@@ -999,13 +949,13 @@
                     case 'countdown': return <CountdownCard startDate={currentComp.startDate} endDate={currentComp.endDate} symbol={currentComp.symbol} t={t} />;
                     case 'prediction': return <PredictionCard stats={stats} t={t} />;
                     case 'threshold': return <ThresholdCard stats={stats} t={t} />;
-                    case 'growth': return <PriceCard coinPrice={coinPrice} priceChange={priceChange} currentComp={currentComp} t={t} />; // Replaced GrowthCard with PriceCard
+                    case 'growth': return <PriceCard coinPrice={coinPrice} priceChange={priceChange} currentComp={currentComp} t={t} />;
                     default: return null;
                 }
             };
 
             const handleOpenManualEntry = () => {
-                setEditingItem(null); // Ensure we are in "Add" mode
+                setEditingItem(null);
                 setManualReward(stats.latestReward || ''); 
                 setManualEligibility(stats.latestEligibility || ''); 
                 setManualVolume(''); 
@@ -1016,28 +966,25 @@
                 const startData = parseISOToUTC8(currentComp.startDate); setManualStartDate(startData.date); setManualStartHour(startData.hour); setManualStartMinute(startData.minute);
                 const endData = parseISOToUTC8(currentComp.endDate); setManualEndDate(endData.date); setManualEndHour(endData.hour); setManualEndMinute(endData.minute);
                 
-                // Only show period inputs if there is no data (Day 1 setup)
                 setShowPeriodInputs(dataList.length === 0);
                 setShowManualModal(true);
             };
 
             const handleEditItem = (item) => {
-                setEditingItem(item); // Set to "Edit" mode
+                setEditingItem(item);
                 setManualVolume(item.volume);
                 setManualUserVolume(item.userVolume);
                 setManualCost(item.cost || '');
                 setManualReward(item.reward);
                 setManualEligibility(item.eligibility);
                 
-                // Parse timestamp to YYYY-MM-DD for the date input
                 const datePart = new Date(item.timestamp).toISOString().split('T')[0];
                 setManualDate(datePart);
 
-                // Pre-fill competition dates (same as open manual entry to avoid clearing them)
                 const startData = parseISOToUTC8(currentComp.startDate); setManualStartDate(startData.date); setManualStartHour(startData.hour); setManualStartMinute(startData.minute);
                 const endData = parseISOToUTC8(currentComp.endDate); setManualEndDate(endData.date); setManualEndHour(endData.hour); setManualEndMinute(endData.minute);
 
-                setShowPeriodInputs(false); // Default to hidden when editing a specific item
+                setShowPeriodInputs(false);
                 setShowManualModal(true);
             };
 
@@ -1056,14 +1003,8 @@
                 let newData;
 
                 if (editingItem) {
-                    // Update existing item
-                    newData = dataList.map(item => 
-                        item.id === editingItem.id 
-                            ? { ...item, ...commonData } 
-                            : item
-                    );
+                    newData = dataList.map(item => item.id === editingItem.id ? { ...item, ...commonData } : item);
                 } else {
-                    // Add new item
                     const newEntry = {
                         id: Date.now(),
                         ...commonData,
@@ -1072,7 +1013,6 @@
                     newData = [...dataList, newEntry];
                 }
                 
-                // Update dates if changed
                 updateCompetitionPeriod(manualStartDate, manualStartHour, manualStartMinute, manualEndDate, manualEndHour, manualEndMinute);
 
                 persistData(newData);
@@ -1095,15 +1035,10 @@
 
             const handleSaveCompetition = () => {
                 if (!compForm.name || !compForm.symbol) return;
-                
-                // Smart Extraction: Check if input is a URL and extract ID
                 let finalCgId = compForm.coingeckoId.trim();
                 if (finalCgId.includes('coingecko.com/')) {
                     try {
-                        // Extract ID from URL like https://www.coingecko.com/en/coins/bitcoin
-                        // or https://www.coingecko.com/zh/coins/ethereum
                         if (finalCgId.includes('/coins/')) {
-                            // Split by /coins/ take second part, then split by / or ? to get the ID
                             const parts = finalCgId.split('/coins/');
                             if (parts[1]) {
                                 finalCgId = parts[1].split(/[/?#]/)[0];
@@ -1111,7 +1046,6 @@
                         }
                     } catch (e) {
                         console.warn("Failed to extract CoinGecko ID from URL", e);
-                        // Fallback to original input if extraction fails
                     }
                 }
 
@@ -1170,7 +1104,6 @@
                 setError(null);
                 
                 try {
-                    // Process all images to base64
                     const imageParts = await Promise.all(files.map(async (file) => {
                         const base64 = await new Promise((resolve, reject) => { 
                             const reader = new FileReader(); 
@@ -1206,23 +1139,19 @@
                     let parsedArray = [];
 
                     try { 
-                        // Try parsing as array first
                         if (jsonStr.startsWith('[') && jsonStr.endsWith(']')) {
                             parsedArray = JSON.parse(jsonStr);
                         } else {
-                            // Try finding array within text
                             const firstBracket = jsonStr.indexOf('[');
                             const lastBracket = jsonStr.lastIndexOf(']');
                             if (firstBracket !== -1 && lastBracket !== -1) {
                                 parsedArray = JSON.parse(jsonStr.substring(firstBracket, lastBracket + 1));
                             } else {
-                                // Try finding single object
                                 const firstBrace = jsonStr.indexOf('{');
                                 const lastBrace = jsonStr.lastIndexOf('}');
                                 if (firstBrace !== -1 && lastBrace !== -1) {
                                     parsedArray = [JSON.parse(jsonStr.substring(firstBrace, lastBrace + 1))];
                                 } else {
-                                     // Last resort: simple number extraction
                                      const val = parseFloat(text.trim().replace(/[^0-9.]/g, ''));
                                      if (!isNaN(val)) parsedArray = [{ volume: val }];
                                 }
@@ -1237,7 +1166,6 @@
                         let currentList = [...dataList];
                         let addedCount = 0;
 
-                        // Check for competition period updates from the first valid entry
                         const periodInfo = parsedArray.find(p => p.promotionStart || p.promotionEnd);
                         if (periodInfo) {
                              const updatedComp = { ...currentComp, startDate: periodInfo.promotionStart || currentComp.startDate, endDate: periodInfo.promotionEnd || currentComp.endDate };
@@ -1253,18 +1181,17 @@
                                     if (!isNaN(parsedTime.getTime())) { timestamp = parsedTime.toISOString(); } 
                                 }
                                 
-                                // Avoid exact duplicates based on timestamp + volume (simple check)
                                 const isDuplicate = currentList.some(item => 
                                     Math.abs(item.volume - data.volume) < 0.01 && 
-                                    Math.abs(new Date(item.timestamp) - new Date(timestamp)) < 60000 // within 1 min
+                                    Math.abs(new Date(item.timestamp) - new Date(timestamp)) < 60000 
                                 );
 
                                 if (!isDuplicate) {
                                     currentList.push({ 
-                                        id: Date.now() + index, // Ensure unique ID
+                                        id: Date.now() + index,
                                         volume: data.volume, 
                                         userVolume: data.userVolume || 0, 
-                                        cost: 0, // AI usually doesn't get cost
+                                        cost: 0,
                                         reward: data.reward || (stats.latestReward || 0), 
                                         eligibility: data.eligibility || (stats.latestEligibility || 0), 
                                         timestamp: timestamp, 
@@ -1278,7 +1205,6 @@
                         if (addedCount > 0) {
                             persistData(currentList);
                         } else {
-                            // If no new data was added but parsing succeeded (e.g. duplicates), we don't throw error
                             if (parsedArray.length === 0) throw new Error("No valid data found.");
                         }
                     } else { 
@@ -1299,7 +1225,6 @@
                 setIsGeneratingStrategy(true); setError(null);
                 try {
                     const dataStr = chartData.map(d => `${d.displayDay}: Threshold $${d.volume}, My Volume $${d.userVolume}`).join(', ');
-                    // Use t.promptStrategy to dynamically select language based on current UI setting
                     const prompt = `${t.promptStrategy}\n\nDataset:\n${dataStr}`;
                     
                     const result = await callGeminiAPI({ 
@@ -1545,6 +1470,13 @@
                                         </div>
                                     </div>
                                     <div className="relative z-10 flex-1 overflow-y-auto p-1.5 space-y-1.5 custom-scrollbar">
+                                        {dataList.length === 0 && (
+                                            <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                                                <Icon name="archive" size={24} className="text-slate-300 dark:text-slate-600 mb-2" />
+                                                <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">No Data Yet</p>
+                                                <p className="text-[10px] text-slate-300 dark:text-slate-600 mt-1">Add data manually or scan a screenshot</p>
+                                            </div>
+                                        )}
                                         {chartData.slice().reverse().map((item, index) => {
                                             const gap = item.userVolume - item.volume;
                                             const isSafe = gap >= 0;
@@ -1757,24 +1689,37 @@
                                         )}
 
                                         <div className="flex-1 w-full min-h-[300px] md:min-h-[420px] relative">
-                                            {chartViewMode === 'curve' ? (
-                                                <ResponsiveContainer width="100%" height="100%">
-                                                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                                        <defs>
-                                                            <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient>
-                                                            <linearGradient id="colorUser" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
-                                                            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-                                                        </defs>
-                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? "#1e293b" : "#e2e8f0"} opacity={0.5} />
-                                                        <XAxis dataKey="displayDay" axisLine={false} tickLine={false} tick={{fontSize:10, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:700}} dy={10} />
-                                                        <YAxis axisLine={false} tickLine={false} tick={{fontSize:10, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:700}} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
-                                                        <Tooltip content={<CustomTooltip t={t} />} cursor={{stroke: '#a5b4fc', strokeWidth: 1, strokeDasharray: '5 5', strokeOpacity: 0.5}} />
-                                                        <Area type="monotone" dataKey="volume" stroke="#6366f1" strokeWidth={3} fill="url(#colorVol)" animationDuration={1500} style={{ filter: 'url(#glow)' }} activeDot={(props) => (<svg><circle cx={props.cx} cy={props.cy} r={8} fill="#6366f1" opacity="0.3" className="animate-ping" /><circle cx={props.cx} cy={props.cy} r={4} fill="#fff" stroke="#6366f1" strokeWidth={2} /></svg>)} />
-                                                        <Area type="monotone" dataKey="userVolume" stroke="#10b981" strokeWidth={3} fill="url(#colorUser)" strokeDasharray="4 4" animationDuration={1500} style={{ filter: 'url(#glow)' }} activeDot={(props) => (<svg><circle cx={props.cx} cy={props.cy} r={8} fill="#10b981" opacity="0.3" className="animate-ping" /><circle cx={props.cx} cy={props.cy} r={4} fill="#fff" stroke="#10b981" strokeWidth={2} /></svg>)} />
-                                                    </AreaChart>
-                                                </ResponsiveContainer>
+                                            {chartData.length === 0 ? (
+                                                <div className="flex flex-col items-center justify-center h-full text-center">
+                                                    <Icon name="bar-chart-2" size={48} className="text-slate-300 dark:text-slate-700 mb-4" />
+                                                    <h3 className="text-lg font-bold text-slate-500 dark:text-slate-400 mb-2">No Data Available</h3>
+                                                    <p className="text-sm text-slate-400 dark:text-slate-500 max-w-xs mx-auto mb-6">
+                                                        The chart is waiting for your first data point. Add data manually or scan a leaderboard screenshot.
+                                                    </p>
+                                                    <button onClick={handleOpenManualEntry} className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all active:scale-[0.98] flex items-center gap-2">
+                                                        <Icon name="plus" size={18} /> Add First Entry
+                                                    </button>
+                                                </div>
                                             ) : (
-                                                <PixelChart data={chartData} t={t} />
+                                                chartViewMode === 'curve' ? (
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                                            <defs>
+                                                                <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient>
+                                                                <linearGradient id="colorUser" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10b981" stopOpacity={0.4}/><stop offset="95%" stopColor="#10b981" stopOpacity={0}/></linearGradient>
+                                                                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="coloredBlur" /><feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+                                                            </defs>
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? "#1e293b" : "#e2e8f0"} opacity={0.5} />
+                                                            <XAxis dataKey="displayDay" axisLine={false} tickLine={false} tick={{fontSize:10, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:700}} dy={10} />
+                                                            <YAxis axisLine={false} tickLine={false} tick={{fontSize:10, fill: theme === 'dark' ? '#64748b' : '#94a3b8', fontWeight:700}} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                                                            <Tooltip content={<CustomTooltip t={t} />} cursor={{stroke: '#a5b4fc', strokeWidth: 1, strokeDasharray: '5 5', strokeOpacity: 0.5}} />
+                                                            <Area type="monotone" dataKey="volume" stroke="#6366f1" strokeWidth={3} fill="url(#colorVol)" animationDuration={1500} style={{ filter: 'url(#glow)' }} activeDot={(props) => (<svg><circle cx={props.cx} cy={props.cy} r={8} fill="#6366f1" opacity="0.3" className="animate-ping" /><circle cx={props.cx} cy={props.cy} r={4} fill="#fff" stroke="#6366f1" strokeWidth={2} /></svg>)} />
+                                                            <Area type="monotone" dataKey="userVolume" stroke="#10b981" strokeWidth={3} fill="url(#colorUser)" strokeDasharray="4 4" animationDuration={1500} style={{ filter: 'url(#glow)' }} activeDot={(props) => (<svg><circle cx={props.cx} cy={props.cy} r={8} fill="#10b981" opacity="0.3" className="animate-ping" /><circle cx={props.cx} cy={props.cy} r={4} fill="#fff" stroke="#10b981" strokeWidth={2} /></svg>)} />
+                                                        </AreaChart>
+                                                    </ResponsiveContainer>
+                                                ) : (
+                                                    <PixelChart data={chartData} t={t} />
+                                                )
                                             )}
                                         </div>
                                     </div>
@@ -1802,7 +1747,7 @@
                             {/* Version Card */}
                             <div className="flex items-center justify-center gap-2 h-10 px-4 md:px-6 bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700/80 transition-all cursor-default group">
                                 <Icon name="tag" size={16} className="text-slate-500 dark:text-slate-400 group-hover:text-emerald-400 transition-colors" />
-                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">v10.6</span>
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">v11.0</span>
                             </div>
                             
                             <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
@@ -2051,7 +1996,7 @@
                                 <a href="https://x.com/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-500 hover:text-blue-500 transition-colors"><Icon name="twitter" size={18} /><span className="text-xs font-bold">Twitter</span></a>
                                 <a href="#" className="flex items-center gap-2 text-slate-500 hover:text-indigo-500 transition-colors"><Icon name="github" size={18} /><span className="text-xs font-bold">Github</span></a>
                             </div>
-                            <div className="text-center text-[10px] text-slate-400 pt-2 font-mono">AlphaDash v10.6 • Local-First Architecture</div>
+                            <div className="text-center text-[10px] text-slate-400 pt-2 font-mono">AlphaDash v11.0 • Local-First Architecture</div>
                         </div>
                     </Modal>
 
